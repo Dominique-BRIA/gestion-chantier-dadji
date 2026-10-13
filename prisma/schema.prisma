@@ -1,0 +1,462 @@
+// Modèle de données du système d'information de gestion de chantier.
+//
+// Principes (voir docs/CAHIER-DES-CHARGES.md) :
+// - les montants sont en FCFA entiers : le franc CFA n'a pas de subdivision en usage ;
+// - les mouvements de stock et les opérations financières ne se suppriment pas :
+//   une erreur se corrige par une nouvelle opération qui référence l'ancienne ;
+// - chaque observation porte une date, pour alimenter les séries chronologiques.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// PostgreSQL : local en développement, Neon en production. Neon passe par un
+// pooler de connexions ; les migrations, elles, exigent une connexion directe.
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  INGENIEUR
+  CLIENT
+  CHEF_CHANTIER
+  MANOEUVRE
+}
+
+// Choisi par l'ingénieur à la création ; il propose les lots de travaux par défaut.
+enum TypeChantier {
+  BATIMENT
+  ROUTE
+  OUVRAGE_ART
+  ASSAINISSEMENT_VRD
+  AUTRE
+}
+
+enum StatutChantier {
+  PREPARATION
+  EN_COURS
+  SUSPENDU
+  TERMINE
+}
+
+enum StatutTache {
+  A_FAIRE
+  EN_COURS
+  TERMINEE
+}
+
+enum StatutValidation {
+  EN_ATTENTE
+  VALIDEE
+  REJETEE
+}
+
+enum TypeMouvement {
+  ENTREE
+  SORTIE
+  PERTE
+  RETOUR
+  CORRECTION
+}
+
+enum CategorieDepense {
+  MATERIAUX
+  MAIN_OEUVRE
+  TRANSPORT
+  LOCATION_MATERIEL
+  DIVERS
+}
+
+enum ModePaiement {
+  ESPECES
+  VIREMENT
+  MOBILE_MONEY
+  CHEQUE
+}
+
+enum StatutPresence {
+  PRESENT
+  RETARD
+  ABSENT
+}
+
+enum TypeSignalement {
+  MANQUE_MATERIAU
+  PERTE
+  INCIDENT
+  ANOMALIE
+  DEMANDE_JUSTIFICATION
+}
+
+enum StatutSignalement {
+  OUVERT
+  EN_COURS
+  CLOS
+}
+
+model Utilisateur {
+  id             Int      @id @default(autoincrement())
+  nom            String
+  prenom         String
+  // Identifiant de connexion : le téléphone, que tout le monde a sur un chantier.
+  telephone      String   @unique
+  email          String?
+  motDePasseHash String
+  role           Role
+  // Métier du manœuvre (maçon, ferrailleur, coffreur…) : on ne compare la
+  // productivité qu'entre personnes du même métier.
+  metier         String?
+  // Salaire journalier du manœuvre, base du coût de main-d'œuvre.
+  tauxJournalier Int?
+  actif          Boolean  @default(true)
+  creeLe         DateTime @default(now())
+
+  chantiersDiriges  Chantier[]         @relation("IngenieurChantier")
+  chantiersClient   Chantier[]         @relation("ClientChantier")
+  affectations      Affectation[]
+  presences         Presence[]         @relation("PresenceOuvrier")
+  presencesSaisies  Presence[]         @relation("PresenceSaisie")
+  avances           Avance[]
+  depenses          Depense[]          @relation("DepenseAuteur")
+  depensesValidees  Depense[]          @relation("DepenseValideur")
+  mouvements        MouvementStock[]
+  inventaires       Inventaire[]
+  productions       Production[]       @relation("ProductionDeclarant")
+  productionsValidees Production[]     @relation("ProductionValideur")
+  rapports          RapportJournalier[]
+  signalements      Signalement[]
+  validations       Validation[]
+  journal           JournalAudit[]
+  avenants          Avenant[]
+  joursRepos        JourRepos[]
+}
+
+model Chantier {
+  id                 Int            @id @default(autoincrement())
+  code               String         @unique
+  nom                String
+  localisation       String
+  type               TypeChantier
+  budgetInitial      Int
+  dateDebutPrevue    DateTime
+  dateFinPrevue      DateTime
+  dateDebutReelle    DateTime?
+  dateFinReelle      DateTime?
+  statut             StatutChantier @default(PREPARATION)
+  // Au-delà de ce montant, une dépense attend la validation de l'ingénieur.
+  seuilValidation    Int            @default(250000)
+  // Part du budget consommée qui déclenche l'alerte « budget presque épuisé ».
+  seuilAlerteBudget  Int            @default(90)
+  // Seuils des alertes AL-xx propres au chantier (RG § 10) ; absent = valeur par défaut.
+  seuils             Json           @default("{}")
+  motifSuspension    String?
+  ingenieurId        Int
+  clientId           Int
+  creeLe             DateTime       @default(now())
+
+  ingenieur    Utilisateur         @relation("IngenieurChantier", fields: [ingenieurId], references: [id])
+  client       Utilisateur         @relation("ClientChantier", fields: [clientId], references: [id])
+  affectations Affectation[]
+  taches       Tache[]
+  materiaux    Materiau[]
+  avenants     Avenant[]
+  joursRepos   JourRepos[]
+  mouvements   MouvementStock[]
+  inventaires  Inventaire[]
+  avances      Avance[]
+  depenses     Depense[]
+  presences    Presence[]
+  rapports     RapportJournalier[]
+  signalements Signalement[]
+}
+
+// Qui travaille sur quel chantier, et depuis quand.
+model Affectation {
+  id            Int       @id @default(autoincrement())
+  utilisateurId Int
+  chantierId    Int
+  fonction      String
+  dateDebut     DateTime
+  dateFin       DateTime?
+
+  utilisateur Utilisateur @relation(fields: [utilisateurId], references: [id])
+  chantier    Chantier    @relation(fields: [chantierId], references: [id])
+
+  @@index([chantierId])
+}
+
+model Tache {
+  id              Int         @id @default(autoincrement())
+  chantierId      Int
+  // Lot de travaux : Terrassement, Fondations, Élévation, Dalle, Toiture, Finitions.
+  lot             String
+  designation     String
+  unite           String
+  quantitePrevue  Float
+  // Coût prévu : sert de POIDS dans l'avancement global pondéré.
+  coutPrevu       Int
+  dateDebutPrevue DateTime
+  dateFinPrevue   DateTime
+  dateDebutReelle DateTime?
+  dateFinReelle   DateTime?
+  statut          StatutTache @default(A_FAIRE)
+  // RG-52 : fin déclarée par un manœuvre, confirmée par le chef, validée par l'ingénieur.
+  finDeclareeLe   DateTime?
+  finConfirmee    Boolean     @default(false)
+  // Cause déclarée en cas de retard : répartition des retards par cause.
+  causeRetard     String?
+  ordre           Int         @default(0)
+
+  chantier    Chantier         @relation(fields: [chantierId], references: [id])
+  productions Production[]
+  sorties     MouvementStock[]
+
+  @@index([chantierId])
+}
+
+// Quantité d'ouvrage réalisée un jour donné sur une tâche : c'est
+// l'observation de base des statistiques de productivité et d'avancement.
+model Production {
+  id               Int              @id @default(autoincrement())
+  tacheId          Int
+  date             DateTime
+  quantite         Float
+  heuresTravaillees Float
+  effectif         Int
+  declareParId     Int
+  statut           StatutValidation @default(EN_ATTENTE)
+  valideParId      Int?
+
+  tache      Tache        @relation(fields: [tacheId], references: [id])
+  declarePar Utilisateur  @relation("ProductionDeclarant", fields: [declareParId], references: [id])
+  validePar  Utilisateur? @relation("ProductionValideur", fields: [valideParId], references: [id])
+
+  @@index([tacheId, date])
+}
+
+// Matériaux gérés PAR chantier : l'ingénieur les enregistre à la création.
+// Pas de catalogue partagé ni de transfert : chaque chantier a son client
+// et son stock propres.
+model Materiau {
+  id                 Int    @id @default(autoincrement())
+  chantierId         Int
+  designation        String
+  unite              String
+  categorie          String
+  prixReference      Int
+  // Délai habituel entre la commande et la livraison : on le compare à
+  // l'autonomie du stock pour décider quand commander.
+  delaiLivraisonJours Int   @default(3)
+  // Autonomie (en jours) sous laquelle le réapprovisionnement est signalé.
+  seuilAlerteJours    Int   @default(5)
+
+  chantier    Chantier         @relation(fields: [chantierId], references: [id])
+  mouvements  MouvementStock[]
+  inventaires Inventaire[]
+
+  @@unique([chantierId, designation])
+}
+
+model MouvementStock {
+  id           Int           @id @default(autoincrement())
+  chantierId   Int
+  materiauId   Int
+  type         TypeMouvement
+  // Toujours positive ; le sens vient du type. Une CORRECTION peut être
+  // négative : elle compense une opération erronée sans l'effacer.
+  quantite     Float
+  // Renseigné pour les entrées : base du prix moyen pondéré.
+  prixUnitaire Int?
+  date         DateTime
+  motif        String?
+  // Pour une sortie : la tâche qui a consommé le matériau.
+  tacheId      Int?
+  auteurId     Int
+  // Pour une correction : l'opération corrigée.
+  corrigeId    Int?
+
+  chantier Chantier       @relation(fields: [chantierId], references: [id])
+  materiau Materiau       @relation(fields: [materiauId], references: [id])
+  tache    Tache?         @relation(fields: [tacheId], references: [id])
+  auteur   Utilisateur    @relation(fields: [auteurId], references: [id])
+  corrige  MouvementStock?  @relation("Correction", fields: [corrigeId], references: [id])
+  corrections MouvementStock[] @relation("Correction")
+  depense     Depense?
+
+  @@index([chantierId, materiauId, date])
+}
+
+model Inventaire {
+  id             Int      @id @default(autoincrement())
+  chantierId     Int
+  materiauId     Int
+  date           DateTime
+  stockTheorique Float
+  stockPhysique  Float
+  auteurId       Int
+  commentaire    String?
+  // RG-25 : l'ingénieur valide ; la validation crée la correction de stock.
+  valide         Boolean  @default(false)
+
+  chantier Chantier    @relation(fields: [chantierId], references: [id])
+  materiau Materiau    @relation(fields: [materiauId], references: [id])
+  auteur   Utilisateur @relation(fields: [auteurId], references: [id])
+}
+
+// Fonds versés par le client au fur et à mesure du chantier.
+model Avance {
+  id         Int              @id @default(autoincrement())
+  chantierId Int
+  clientId   Int
+  montant    Int
+  date       DateTime
+  mode       ModePaiement
+  reference  String?
+  // Le client déclare son versement ; l'ingénieur confirme la réception.
+  statut     StatutValidation @default(EN_ATTENTE)
+
+  chantier Chantier    @relation(fields: [chantierId], references: [id])
+  client   Utilisateur @relation(fields: [clientId], references: [id])
+
+  @@index([chantierId, date])
+}
+
+model Depense {
+  id           Int              @id @default(autoincrement())
+  chantierId   Int
+  categorie    CategorieDepense
+  libelle      String
+  montant      Int
+  date         DateTime
+  // Référence du justificatif (n° de facture, de reçu) et clé du fichier
+  // scanné sur Backblaze B2 ; les deux vides = dépense non justifiée.
+  justificatif String?
+  fichierCle   String?
+  // Dépense générée par une entrée de stock achetée : rapproche finances et stock.
+  mouvementId  Int?     @unique
+  statut       StatutValidation @default(EN_ATTENTE)
+  // Engagée tant que datePaiement est vide ; seule une dépense payée sort
+  // de la trésorerie (§4.1 : engagé ≠ payé).
+  datePaiement DateTime?
+  auteurId     Int
+  valideParId  Int?
+
+  chantier  Chantier     @relation(fields: [chantierId], references: [id])
+  mouvement MouvementStock? @relation(fields: [mouvementId], references: [id])
+  auteur    Utilisateur  @relation("DepenseAuteur", fields: [auteurId], references: [id])
+  validePar Utilisateur? @relation("DepenseValideur", fields: [valideParId], references: [id])
+
+  @@index([chantierId, date])
+}
+
+model Presence {
+  id             Int            @id @default(autoincrement())
+  chantierId     Int
+  ouvrierId      Int
+  date           DateTime
+  statut         StatutPresence
+  heuresPrevues  Float          @default(8)
+  heuresRealisees Float
+  saisieParId    Int
+  // RG-61 : pointage déclaré par le manœuvre, en attente de confirmation du chef.
+  confirmee      Boolean        @default(true)
+
+  chantier  Chantier    @relation(fields: [chantierId], references: [id])
+  ouvrier   Utilisateur @relation("PresenceOuvrier", fields: [ouvrierId], references: [id])
+  saisiePar Utilisateur @relation("PresenceSaisie", fields: [saisieParId], references: [id])
+
+  // Une seule ligne de présence par ouvrier et par jour.
+  @@unique([ouvrierId, date])
+  @@index([chantierId, date])
+}
+
+model RapportJournalier {
+  id           Int              @id @default(autoincrement())
+  chantierId   Int
+  date         DateTime
+  meteo        String
+  travaux      String
+  incidents    String?
+  observations String?
+  auteurId     Int
+  statut       StatutValidation @default(EN_ATTENTE)
+
+  chantier Chantier    @relation(fields: [chantierId], references: [id])
+  auteur   Utilisateur @relation(fields: [auteurId], references: [id])
+
+  @@unique([chantierId, date])
+}
+
+model Signalement {
+  id          Int               @id @default(autoincrement())
+  chantierId  Int
+  auteurId    Int
+  type        TypeSignalement
+  description String
+  date        DateTime
+  statut      StatutSignalement @default(OUVERT)
+  reponse     String?
+  dateCloture DateTime?
+
+  chantier Chantier    @relation(fields: [chantierId], references: [id])
+  auteur   Utilisateur @relation(fields: [auteurId], references: [id])
+}
+
+// Historique des décisions : le statut d'une dépense, d'une avance, d'une
+// production ou d'un rapport donne l'état COURANT ; cette table garde
+// chaque décision, son auteur et son motif (§9 : déclaré ≠ approuvé).
+model Validation {
+  id            Int              @id @default(autoincrement())
+  objetType     String
+  objetId       Int
+  decision      StatutValidation
+  responsableId Int
+  date          DateTime         @default(now())
+  commentaire   String?
+
+  responsable Utilisateur @relation(fields: [responsableId], references: [id])
+
+  @@index([objetType, objetId])
+}
+
+// Trace de toute écriture : qui, quoi, avant, après.
+model JournalAudit {
+  id              Int      @id @default(autoincrement())
+  auteurId        Int
+  action          String
+  entite          String
+  entiteId        Int
+  ancienneValeur  String?
+  nouvelleValeur  String?
+  date            DateTime @default(now())
+
+  auteur Utilisateur @relation(fields: [auteurId], references: [id])
+}
+
+// RG-12 : révision du budget, sans toucher au budget initial.
+model Avenant {
+  id           Int      @id @default(autoincrement())
+  chantierId   Int
+  nouveauBudget Int
+  motif        String
+  date         DateTime @default(now())
+  auteurId     Int
+
+  chantier Chantier    @relation(fields: [chantierId], references: [id])
+  auteur   Utilisateur @relation(fields: [auteurId], references: [id])
+}
+
+// RG-63 : un jour de repos par semaine, déclaré par le chef de chantier.
+model JourRepos {
+  id           Int      @id @default(autoincrement())
+  chantierId   Int
+  date         DateTime
+  declareParId Int
+
+  chantier   Chantier    @relation(fields: [chantierId], references: [id])
+  declarePar Utilisateur @relation(fields: [declareParId], references: [id])
+
+  @@unique([chantierId, date])
+}
