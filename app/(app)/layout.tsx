@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { exigerSession, filtreChantiers } from "@/lib/auth";
 import { deconnexion } from "@/app/actions";
 import { Coque } from "@/components/app/Coque";
+import { Logo } from "@/components/app/Logo";
 
 export const dynamic = "force-dynamic";
 
@@ -13,7 +14,7 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
     orderBy: { creeLe: "desc" },
   });
   return (
-    <Coque nom={s.nom} role={s.role} chantiers={chantiers} deconnexion={deconnexion}>
+    <Coque nom={s.nom} role={s.role} chantiers={chantiers} deconnexion={deconnexion} logo={<Logo taille={36} />}>
       {children}
     </Coque>
   );

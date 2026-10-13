@@ -10,5 +10,6 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!login|_next|favicon.ico|fonts).*)"],
+  // L'accueil (/), la connexion et les fichiers statiques restent publics.
+  matcher: ["/((?!login|_next|favicon.ico|icon.png|logo.png|fonts).+)"],
 };

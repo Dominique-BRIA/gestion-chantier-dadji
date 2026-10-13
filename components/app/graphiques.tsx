@@ -19,8 +19,8 @@ import {
 } from "recharts";
 import { histogramme, type Boite } from "@/lib/stats";
 
-// Palette d'alanya-admin : indigo en tête, puis des teintes distinctes en clair comme en sombre.
-export const COULEURS = ["#6366f1", "#10b981", "#f59e0b", "#ef4444", "#06b6d4", "#8b5cf6", "#ec4899", "#84cc16"];
+// Orange du logo en tête, puis des teintes lisibles en clair comme en sombre.
+export const COULEURS = ["#f97316", "#14b8a6", "#3b82f6", "#ef4444", "#a855f7", "#eab308", "#ec4899", "#84cc16"];
 
 const axe = { fontSize: 11, fill: "hsl(var(--muted-foreground))" };
 const infobulle = {
@@ -201,13 +201,13 @@ export function BoiteMoustaches({ boite, unite }: { boite: Boite; unite: string 
   const basse = Math.max(boite.min, boite.bornesBasse);
   const haute = Math.min(boite.max, boite.bornesHaute);
   return (
-    <svg viewBox="0 0 600 110" className="w-full h-28 text-zinc-500">
+    <svg viewBox="0 0 600 110" className="w-full h-28 text-muted-foreground">
       <line x1={pos(basse)} x2={pos(boite.q1)} y1={45} y2={45} stroke="currentColor" />
       <line x1={pos(boite.q3)} x2={pos(haute)} y1={45} y2={45} stroke="currentColor" />
       <line x1={pos(basse)} x2={pos(basse)} y1={33} y2={57} stroke="currentColor" />
       <line x1={pos(haute)} x2={pos(haute)} y1={33} y2={57} stroke="currentColor" />
-      <rect x={pos(boite.q1)} y={25} width={pos(boite.q3) - pos(boite.q1)} height={40} rx={4} fill="#6366f133" stroke="#6366f1" />
-      <line x1={pos(boite.mediane)} x2={pos(boite.mediane)} y1={25} y2={65} stroke="#6366f1" strokeWidth={3} />
+      <rect x={pos(boite.q1)} y={25} width={pos(boite.q3) - pos(boite.q1)} height={40} rx={4} fill="#f9731633" stroke="#f97316" />
+      <line x1={pos(boite.mediane)} x2={pos(boite.mediane)} y1={25} y2={65} stroke="#f97316" strokeWidth={3} />
       {boite.atypiques.map((v, i) => (
         <circle key={i} cx={pos(v)} cy={45} r={4} fill="#ef4444" />
       ))}

@@ -19,7 +19,7 @@ const ICONES: Record<string, LucideIcon> = {
 export function Onglets({ base, onglets }: { base: string; onglets: [string, string][] }) {
   const chemin = usePathname();
   return (
-    <nav className="flex gap-1 overflow-x-auto border-b dark:border-zinc-800 -mx-1 px-1">
+    <nav className="flex gap-1 overflow-x-auto border-b border-border -mx-1 px-1">
       {onglets.map(([seg, label]) => {
         const href = seg ? `${base}/${seg}` : base;
         const actif = seg ? chemin.startsWith(href) : chemin === base;
@@ -30,7 +30,7 @@ export function Onglets({ base, onglets }: { base: string; onglets: [string, str
             href={href}
             className={cn(
               "flex items-center gap-2 whitespace-nowrap px-3 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors",
-              actif ? "border-indigo-500 text-indigo-700 dark:text-indigo-300" : "border-transparent text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200",
+              actif ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground",
             )}
           >
             <Icone className="h-4 w-4" />

@@ -4,6 +4,7 @@ import { fcfa } from "@/lib/format";
 import { ROLES } from "@/lib/labels";
 import { basculerActif, creerUtilisateur } from "@/app/actions";
 import { ActionLigne, Bandeau, Champ, Choix, Formulaire, Pastille, Section, Tableau } from "@/components/app/ui";
+import { Cadres } from "@/components/app/Cadres";
 
 export default async function Utilisateurs({ searchParams }: { searchParams: { erreur?: string; ok?: string } }) {
   await exigerSession(["INGENIEUR"]);
@@ -13,23 +14,16 @@ export default async function Utilisateurs({ searchParams }: { searchParams: { e
   });
   const retour = "/utilisateurs";
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
+    <div className="space-y-5 max-w-7xl mx-auto">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Utilisateurs</h1>
-        <p className="text-sm text-zinc-500">Seul l&apos;ingénieur crée et désactive les comptes ; un compte n&apos;est jamais supprimé (RG-02).</p>
+        <p className="text-sm text-muted-foreground">Seul l&apos;ingénieur crée et désactive les comptes ; un compte n&apos;est jamais supprimé (RG-02).</p>
       </div>
       <Bandeau erreur={searchParams.erreur} ok={searchParams.ok} />
-      <Formulaire action={creerUtilisateur} titre="Créer un compte" cache={{ retour }}>
-        <Choix label="Rôle" name="role" options={[["MANOEUVRE", "Manœuvre"], ["CHEF_CHANTIER", "Chef de chantier"], ["CLIENT", "Client"]]} />
-        <Champ label="Nom" name="nom" />
-        <Champ label="Prénom" name="prenom" />
-        <Champ label="Téléphone (identifiant)" name="telephone" />
-        <Champ label="Mot de passe provisoire" name="motDePasse" minLength={8} />
-        <Champ label="E-mail" name="email" type="email" requis={false} />
-        <Champ label="Métier (manœuvre)" name="metier" requis={false} placeholder="Maçon, ferrailleur…" />
-        <Champ label="Taux journalier (FCFA)" name="tauxJournalier" type="number" requis={false} />
-      </Formulaire>
-      <Section titre={`${utilisateurs.length} comptes`}>
+      <Cadres
+        cadres={[
+          { id: "comptes", titre: "Comptes", icone: "equipe", compte: utilisateurs.length, contenu: (
+      <Section titre="Comptes">
         <Tableau entetes={["Nom", "Rôle", "Téléphone", "Métier / taux", "Affectation en cours", "État", ""]}>
           {utilisateurs.map((u) => (
             <tr key={u.id} className={u.actif ? "" : "opacity-50"}>
@@ -56,6 +50,21 @@ export default async function Utilisateurs({ searchParams }: { searchParams: { e
           ))}
         </Tableau>
       </Section>
+          ) },
+          { id: "nouveau", titre: "Nouveau compte", icone: "plus", contenu: (
+      <Formulaire action={creerUtilisateur} titre="Créer un compte" description="Le téléphone sert d'identifiant ; le mot de passe provisoire compte au moins 8 caractères." cache={{ retour }}>
+        <Choix label="Rôle" name="role" options={[["MANOEUVRE", "Manœuvre"], ["CHEF_CHANTIER", "Chef de chantier"], ["CLIENT", "Client"]]} />
+        <Champ label="Nom" name="nom" />
+        <Champ label="Prénom" name="prenom" />
+        <Champ label="Téléphone (identifiant)" name="telephone" />
+        <Champ label="Mot de passe provisoire" name="motDePasse" minLength={8} />
+        <Champ label="E-mail" name="email" type="email" requis={false} />
+        <Champ label="Métier (manœuvre)" name="metier" requis={false} placeholder="Maçon, ferrailleur…" />
+        <Champ label="Taux journalier (FCFA)" name="tauxJournalier" type="number" requis={false} />
+      </Formulaire>
+          ) },
+        ]}
+      />
     </div>
   );
 }

@@ -6,6 +6,7 @@ import { aujourdhui, cleJour, date, fcfa, nombre, pct } from "@/lib/format";
 import { CAUSES_RETARD, LOTS_PAR_TYPE, STATUTS_TACHE } from "@/lib/labels";
 import { cloturerTache, confirmerFinTache, creerTache, deciderProduction, declarerProduction } from "@/app/actions";
 import { ActionLigne, Bandeau, Bouton, Champ, Choix, Formulaire, Note, Pastille, Section, Tableau, tonStatut } from "@/components/app/ui";
+import { Cadres, type Cadre } from "@/components/app/Cadres";
 
 export default async function Travaux({ params, searchParams }: { params: { id: string }; searchParams: { erreur?: string; ok?: string } }) {
   const { s, chantier } = await exigerChantier(Number(params.id), ["INGENIEUR", "CLIENT", "CHEF_CHANTIER"]);
@@ -24,10 +25,9 @@ export default async function Travaux({ params, searchParams }: { params: { id: 
   const meta = await prisma.tache.findMany({ where: { chantierId: id }, select: { id: true, finDeclareeLe: true, finConfirmee: true } });
   const fin = new Map(meta.map((m) => [m.id, m]));
 
-  return (
-    <div className="space-y-6">
-      <Bandeau erreur={searchParams.erreur} ok={searchParams.ok} />
-      <Section
+  const cadres: Cadre[] = [
+    { id: "taches", titre: "Tâches", icone: "taches", contenu: (
+<Section
         titre="Tâches et avancement"
         description={`Avancement global pondéré par le coût prévu : ${pct(ind.avancement.global)} (prévu à ce jour : ${pct(ind.avancement.prevu)}). Seules les productions validées comptent (RG-53).`}
       >
@@ -36,15 +36,15 @@ export default async function Travaux({ params, searchParams }: { params: { id: 
             const m = fin.get(t.id);
             return (
               <tr key={t.id}>
-                <td className="text-xs text-zinc-500 whitespace-nowrap">{t.lot}</td>
+                <td className="text-xs text-muted-foreground whitespace-nowrap">{t.lot}</td>
                 <td>{t.designation}</td>
                 <td className="tabular-nums whitespace-nowrap">
                   {nombre(t.realise, 1)} / {nombre(t.quantitePrevue, 1)} {t.unite}
                 </td>
                 <td className="min-w-[110px]">
                   <div className="flex items-center gap-2">
-                    <div className="h-1.5 flex-1 rounded-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
-                      <div className="h-full rounded-full bg-indigo-500" style={{ width: `${t.taux}%` }} />
+                    <div className="h-1.5 flex-1 rounded-full bg-muted overflow-hidden">
+                      <div className="h-full rounded-full bg-primary" style={{ width: `${t.taux}%` }} />
                     </div>
                     <span className="text-xs tabular-nums">{nombre(t.taux, 0)} %</span>
                   </div>
@@ -53,12 +53,12 @@ export default async function Travaux({ params, searchParams }: { params: { id: 
                 <td className="tabular-nums whitespace-nowrap">{fcfa(t.coutPrevu)}</td>
                 <td className="whitespace-nowrap">{date(t.dateFinPrevue)}</td>
                 <td className="whitespace-nowrap">
-                  {t.retard > 0 ? <Pastille ton="rouge">{t.retard} j</Pastille> : <span className="text-xs text-zinc-400">—</span>}
-                  {t.causeRetard && <p className="text-[11px] text-zinc-500">{t.causeRetard}</p>}
+                  {t.retard > 0 ? <Pastille ton="rouge">{t.retard} j</Pastille> : <span className="text-xs text-muted-foreground">—</span>}
+                  {t.causeRetard && <p className="text-[11px] text-muted-foreground">{t.causeRetard}</p>}
                 </td>
                 <td>
                   <Pastille ton={tonStatut(t.statut)}>{STATUTS_TACHE[t.statut]}</Pastille>
-                  {m?.finDeclareeLe && t.statut !== "TERMINEE" && <p className="text-[11px] text-zinc-500">{m.finConfirmee ? "fin confirmée" : "fin signalée"}</p>}
+                  {m?.finDeclareeLe && t.statut !== "TERMINEE" && <p className="text-[11px] text-muted-foreground">{m.finConfirmee ? "fin confirmée" : "fin signalée"}</p>}
                 </td>
                 <td className="whitespace-nowrap">
                   {ouvert && s.role === "CHEF_CHANTIER" && m?.finDeclareeLe && !m.finConfirmee && (
@@ -94,39 +94,19 @@ export default async function Travaux({ params, searchParams }: { params: { id: 
           pourcentages est exclue (§ 4.4 du cahier).
         </Note>
       </Section>
-
-      {ouvert && s.role !== "CLIENT" && (
-        <div className="space-y-3">
-          {s.role === "INGENIEUR" && (
-            <Formulaire action={creerTache} titre="Créer une tâche (RG-50)" cache={cache}>
-              <label className="space-y-1 text-sm">
-                <span className="font-medium">Lot</span>
-                <input name="lot" list="lots" required className="flex h-9 w-full rounded-lg border border-input bg-background px-3 text-sm" />
-                <datalist id="lots">
-                  {lots.map((l) => (
-                    <option key={l} value={l} />
-                  ))}
-                </datalist>
-              </label>
-              <Champ label="Désignation" name="designation" />
-              <Champ label="Unité d'ouvrage (m², m³, ml…)" name="unite" />
-              <Champ label="Quantité prévue" name="quantitePrevue" type="number" step="0.01" min="0.01" />
-              <Champ label="Coût prévu (FCFA)" name="coutPrevu" type="number" min={1} />
-              <Champ label="Début prévu" name="dateDebutPrevue" type="date" />
-              <Champ label="Fin prévue" name="dateFinPrevue" type="date" />
-            </Formulaire>
-          )}
-          <Formulaire action={declarerProduction} titre="Déclarer la production du jour (RG-51)" cache={cache}>
+    ) },
+  ];
+  if (ouvert && s.role !== "CLIENT") cadres.push({ id: "production", titre: "Production du jour", icone: "plus", contenu: (
+<Formulaire action={declarerProduction} titre="Déclarer la production du jour" description="Quantité, heures et effectif : la déclaration attend la validation de l'ingénieur (RG-51, RG-53)." cache={cache}>
             <Choix label="Tâche" name="tacheId" options={taches.filter((t) => t.statut !== "TERMINEE").map((t) => [t.id, `${t.designation} (${t.unite})`])} />
             <Champ label="Date" name="date" type="date" defaultValue={cleJour(aujourdhui())} />
             <Champ label="Quantité réalisée" name="quantite" type="number" step="0.01" min="0.01" />
             <Champ label="Heures travaillées (équipe)" name="heuresTravaillees" type="number" step="0.5" min="0.5" />
             <Champ label="Effectif" name="effectif" type="number" min={1} defaultValue={1} />
           </Formulaire>
-        </div>
-      )}
-
-      <Section
+  ) });
+  cadres.push({ id: "attente", titre: "En attente", icone: "attente", compte: enAttente.length, contenu: (
+<Section
         titre="Productions en attente de validation"
         description="L'ingénieur valide après contrôle sur le terrain ; au-delà de 3 jours, l'alerte AL-08 se déclenche."
         actions={
@@ -171,6 +151,31 @@ export default async function Travaux({ params, searchParams }: { params: { id: 
           ))}
         </Tableau>
       </Section>
+  ) });
+  if (ouvert && s.role === "INGENIEUR") cadres.push({ id: "nouvelle", titre: "Nouvelle tâche", icone: "ajout", contenu: (
+<Formulaire action={creerTache} titre="Créer une tâche" description="Le coût prévu sert de poids dans l'avancement global (RG-50, RG-55)." cache={cache}>
+              <label className="space-y-1 text-sm">
+                <span className="font-medium">Lot</span>
+                <input name="lot" list="lots" required className="flex h-9 w-full rounded-lg border border-input bg-background px-3 text-sm" />
+                <datalist id="lots">
+                  {lots.map((l) => (
+                    <option key={l} value={l} />
+                  ))}
+                </datalist>
+              </label>
+              <Champ label="Désignation" name="designation" />
+              <Champ label="Unité d'ouvrage (m², m³, ml…)" name="unite" />
+              <Champ label="Quantité prévue" name="quantitePrevue" type="number" step="0.01" min="0.01" />
+              <Champ label="Coût prévu (FCFA)" name="coutPrevu" type="number" min={1} />
+              <Champ label="Début prévu" name="dateDebutPrevue" type="date" />
+              <Champ label="Fin prévue" name="dateFinPrevue" type="date" />
+            </Formulaire>
+  ) });
+
+  return (
+    <div className="space-y-5">
+      <Bandeau erreur={searchParams.erreur} ok={searchParams.ok} />
+      <Cadres cadres={cadres} />
     </div>
   );
 }

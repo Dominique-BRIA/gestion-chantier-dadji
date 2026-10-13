@@ -4,6 +4,7 @@ import { ajouterJours, aujourdhui, cleJour, date, fcfa, jourUTC, nombre, pct } f
 import { STATUTS_PRESENCE } from "@/lib/labels";
 import { affecter, annulerRepos, declarerRepos, saisirPresences, terminerAffectation } from "@/app/actions";
 import { ActionLigne, Bandeau, Bouton, Champ, Choix, Formulaire, Note, Pastille, Section, Tableau } from "@/components/app/ui";
+import { Cadres, type Cadre } from "@/components/app/Cadres";
 
 export default async function Personnel({ params, searchParams }: { params: { id: string }; searchParams: { erreur?: string; ok?: string; date?: string } }) {
   const { s, chantier } = await exigerChantier(Number(params.id), ["INGENIEUR", "CHEF_CHANTIER"]);
@@ -44,10 +45,9 @@ export default async function Personnel({ params, searchParams }: { params: { id
     };
   });
 
-  return (
-    <div className="space-y-6">
-      <Bandeau erreur={searchParams.erreur} ok={searchParams.ok} />
-      <Section
+  const cadres: Cadre[] = [
+    { id: "jour", titre: "Présences du jour", icone: "presence", contenu: (
+<Section
         titre={`Présences du ${date(jour)}`}
         description="Une ligne par manœuvre et par jour (RG-60). Le chef saisit le jour même ou le lendemain ; au-delà, seul l'ingénieur (RG-80)."
         actions={
@@ -59,7 +59,7 @@ export default async function Personnel({ params, searchParams }: { params: { id
           </form>
         }
       >
-        {estRepos && <p className="mb-3 text-sm text-indigo-600">Jour de repos déclaré : aucune présence n&apos;est attendue (RG-63).</p>}
+        {estRepos && <p className="mb-3 text-sm text-primary">Jour de repos déclaré : aucune présence n&apos;est attendue (RG-63).</p>}
         <form action={saisirPresences}>
           {Object.entries({ ...cache, date: cleJour(jour), retour: `${retour}?date=${cleJour(jour)}` }).map(([k, v]) => (
             <input key={k} type="hidden" name={k} value={v} />
@@ -72,7 +72,7 @@ export default async function Personnel({ params, searchParams }: { params: { id
                   <td className="font-medium">
                     {a.utilisateur.prenom} {a.utilisateur.nom}
                   </td>
-                  <td className="text-xs text-zinc-500">{a.utilisateur.metier}</td>
+                  <td className="text-xs text-muted-foreground">{a.utilisateur.metier}</td>
                   <td>
                     <select name={`statut_${a.utilisateurId}`} defaultValue={p?.statut ?? ""} className="h-8 rounded-md border border-input bg-background px-2 text-sm">
                       <option value="">—</option>
@@ -98,9 +98,9 @@ export default async function Personnel({ params, searchParams }: { params: { id
           )}
         </form>
       </Section>
-
-      <div className="grid gap-6 xl:grid-cols-2">
-        <Section titre="Présence sur 30 jours, par manœuvre" description="Taux = heures réalisées ÷ heures prévues. Heures supplémentaires = max(0, réalisées − prévues).">
+    ) },
+    { id: "stats", titre: "Sur 30 jours", icone: "stats", contenu: (
+<Section titre="Présence sur 30 jours, par manœuvre" description="Taux = heures réalisées ÷ heures prévues. Heures supplémentaires = max(0, réalisées − prévues).">
           <Tableau entetes={["Manœuvre", "Jours", "Absences", "Retards", "Taux", "H. sup.", "Coût théorique"]} vide={!stats.length}>
             {stats.map((x) => (
               <tr key={x.a.id}>
@@ -120,7 +120,9 @@ export default async function Personnel({ params, searchParams }: { params: { id
           </Tableau>
           <Note>Coût théorique = Σ (heures réalisées ÷ heures prévues) × taux journalier ; il se compare à la paie enregistrée en dépenses (RG-44).</Note>
         </Section>
-        <Section titre="Jours de repos" description="Tous les jours sont ouvrés ; un jour de repos par semaine peut être déclaré à l'avance (RG-63).">
+    ) },
+    { id: "repos", titre: "Jours de repos", icone: "repos", contenu: (
+<Section titre="Jours de repos" description="Tous les jours sont ouvrés ; un jour de repos par semaine peut être déclaré à l'avance (RG-63).">
           {ouvert && (
             <form action={declarerRepos} className="mb-4 flex flex-wrap items-end gap-2">
               {Object.entries(cache).map(([k, v]) => (
@@ -146,18 +148,9 @@ export default async function Personnel({ params, searchParams }: { params: { id
             ))}
           </Tableau>
         </Section>
-      </div>
-
-      <Section titre="Équipe affectée" description="Retirer une personne clôt son affectation ; rien n'est supprimé (RG-13).">
-        {s.role === "INGENIEUR" && ouvert && (
-          <div className="mb-4">
-            <Formulaire action={affecter} titre="Affecter un chef de chantier ou un manœuvre" cache={cache}>
-              <Choix label="Personne" name="utilisateurId" options={disponibles.map((u) => [u.id, `${u.prenom} ${u.nom} — ${u.role === "MANOEUVRE" ? (u.metier ?? "Manœuvre") : "Chef de chantier"}`])} />
-              <Champ label="Fonction" name="fonction" requis={false} />
-              <Champ label="Date de début" name="dateDebut" type="date" defaultValue={cleJour(aujourdhui())} />
-            </Formulaire>
-          </div>
-        )}
+    ) },
+    { id: "equipe", titre: "Équipe", icone: "equipe", contenu: (
+<Section titre="Équipe affectée" description="Retirer une personne clôt son affectation ; rien n'est supprimé (RG-13).">
         <Tableau entetes={["Nom", "Fonction", "Téléphone", "Depuis", "Jusqu'au", ""]}>
           {affectations.map((a) => (
             <tr key={a.id} className={a.dateFin ? "opacity-50" : ""}>
@@ -179,6 +172,20 @@ export default async function Personnel({ params, searchParams }: { params: { id
           ))}
         </Tableau>
       </Section>
+    ) },
+  ];
+  if (s.role === "INGENIEUR" && ouvert) cadres.push({ id: "affecter", titre: "Affecter", icone: "plus", contenu: (
+<Formulaire action={affecter} titre="Affecter un chef de chantier ou un manœuvre" description="Un manœuvre n'a qu'une affectation en cours à la fois (RG-13)." cache={cache}>
+              <Choix label="Personne" name="utilisateurId" options={disponibles.map((u) => [u.id, `${u.prenom} ${u.nom} — ${u.role === "MANOEUVRE" ? (u.metier ?? "Manœuvre") : "Chef de chantier"}`])} />
+              <Champ label="Fonction" name="fonction" requis={false} />
+              <Champ label="Date de début" name="dateDebut" type="date" defaultValue={cleJour(aujourdhui())} />
+            </Formulaire>
+  ) });
+
+  return (
+    <div className="space-y-5">
+      <Bandeau erreur={searchParams.erreur} ok={searchParams.ok} />
+      <Cadres cadres={cadres} />
     </div>
   );
 }

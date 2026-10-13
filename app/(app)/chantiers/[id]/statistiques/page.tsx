@@ -4,11 +4,12 @@ import { calculerIndicateurs, N_MIN, type Descriptif } from "@/lib/indicateurs";
 import { aujourdhui, date, fcfa, jourCourt, nombre, pct } from "@/lib/format";
 import { CATEGORIES_DEPENSE } from "@/lib/labels";
 import { Note, Pastille, Section, Tableau } from "@/components/app/ui";
+import { Cadres } from "@/components/app/Cadres";
 import { Barres, BoiteMoustaches, Courbes, Histogramme, Nuage, Pareto } from "@/components/app/graphiques";
 
 /** Lecture du coefficient de variation (RG-92). */
 function lectureCV(cv: number) {
-  if (!Number.isFinite(cv)) return <span className="text-xs text-zinc-400">non calculable</span>;
+  if (!Number.isFinite(cv)) return <span className="text-xs text-muted-foreground">non calculable</span>;
   if (cv < 15) return <Pastille ton="vert">homogène</Pastille>;
   if (cv <= 30) return <Pastille ton="orange">dispersion modérée</Pastille>;
   return <Pastille ton="rouge">irrégulière</Pastille>;
@@ -17,7 +18,7 @@ function lectureCV(cv: number) {
 function TableDescriptive({ d, f }: { d: Descriptif; f: (v: number) => string }) {
   const lignes: [string, string, string][] = [
     ["Effectif n", String(d.n), "Nombre de jours observés"],
-    ["Moyenne x̄", f(d.moyenne), "Σxᵢ ÷ n"],
+    ["Moyenne", f(d.moyenne), "Σxᵢ ÷ n"],
     ["Médiane", f(d.mediane), "Valeur centrale, peu sensible aux extrêmes"],
     ["Mode", d.modes.length ? d.modes.map(f).join(" ; ") : "aucun", "Valeur la plus fréquente"],
     ["Écart-type σ", f(d.ecartType), "√(Σ(xᵢ − x̄)² ÷ n)"],
@@ -33,7 +34,7 @@ function TableDescriptive({ d, f }: { d: Descriptif; f: (v: number) => string })
         <tr key={a}>
           <td className="font-medium">{a}</td>
           <td className="tabular-nums">{b}</td>
-          <td className="text-xs text-zinc-500">{c}</td>
+          <td className="text-xs text-muted-foreground">{c}</td>
         </tr>
       ))}
     </Tableau>
@@ -48,33 +49,35 @@ export default async function Statistiques({ params }: { params: { id: string } 
   const a = ind.avancement;
 
   return (
-    <div className="space-y-6">
-      <p className="text-sm text-zinc-500">
+    <div className="space-y-5">
+      <p className="text-sm text-muted-foreground">
         Période d&apos;analyse : {ind.periode} ({ind.nJoursPeriode} jours ouvrés). Les statistiques ne s&apos;affichent qu&apos;à partir d&apos;un effectif
         minimal : {N_MIN.moyenne} pour une moyenne, {N_MIN.dispersion} pour la dispersion, {N_MIN.boite} pour une boîte à moustaches, {N_MIN.regression} pour une
         régression (RG-91).
       </p>
 
-      {/* 1. Dépenses : tendance centrale et dispersion (§ 5.1 et 5.2) */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Section titre="Dépenses journalières : statistique descriptive" description="Jours ouvrés de la période ayant au moins une dépense validée. Unité : FCFA.">
+      <Cadres
+        cadres={[
+          { id: "descriptif", titre: "Dépenses", icone: "stats", contenu: (
+<Section titre="Dépenses journalières : statistique descriptive" description="Jours ouvrés de la période ayant au moins une dépense validée. Unité : FCFA.">
           <TableDescriptive d={f.descriptif} f={fcfa} />
           <div className="mt-3 flex items-center gap-2 text-sm">Lecture du coefficient de variation : {lectureCV(f.descriptif.cv)}</div>
         </Section>
-        <div className="space-y-6">
-          <Section titre="Distribution des dépenses journalières" description="Histogramme en classes d'amplitude égale, règle de Sturges k = 1 + log₂(n).">
+          ) },
+          { id: "distribution", titre: "Distribution", icone: "camembert", contenu: (
+<div className="space-y-5">
+<Section titre="Distribution des dépenses journalières" description="Histogramme en classes d'amplitude égale, règle de Sturges k = 1 + log₂(n).">
             <Histogramme valeurs={f.histogramme} unite="FCFA" />
           </Section>
-          <Section titre="Boîte à moustaches" description="Les points rouges sont les journées atypiques, au-delà de Q1 − 1,5 × IQR ou Q3 + 1,5 × IQR (Tukey).">
-            {f.descriptif.boite ? <BoiteMoustaches boite={f.descriptif.boite} unite="FCFA" /> : <p className="text-sm text-zinc-500">Données insuffisantes (n &lt; {N_MIN.boite}).</p>}
+<Section titre="Boîte à moustaches" description="Les points rouges sont les journées atypiques, au-delà de Q1 − 1,5 × IQR ou Q3 + 1,5 × IQR (Tukey).">
+            {f.descriptif.boite ? <BoiteMoustaches boite={f.descriptif.boite} unite="FCFA" /> : <p className="text-sm text-muted-foreground">Données insuffisantes (n &lt; {N_MIN.boite}).</p>}
             {f.descriptif.boite && <Note>{f.descriptif.boite.atypiques.length} journée(s) atypique(s) : à examiner, jamais supprimées du calcul (RG-92).</Note>}
           </Section>
-        </div>
-      </div>
-
-      {/* 2. Corrélation et régression (§ 5.4) */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Section
+</div>
+          ) },
+          { id: "regression", titre: "Régression", icone: "comparer", contenu: (
+<div className="space-y-5">
+<Section
           titre="Heures travaillées et quantité produite"
           description={p.tachePrincipale ? `Tâche la plus observée : « ${p.tachePrincipale} » (${p.unitePrincipale}). Une seule unité d'ouvrage par nuage (RG-94).` : "Aucune production validée sur la période."}
         >
@@ -87,14 +90,14 @@ export default async function Statistiques({ params }: { params: { id: string } 
               <Mesure nom="n" valeur={String(p.regression.n)} />
             </div>
           ) : (
-            <p className="text-sm text-zinc-500">Régression non calculée : moins de {N_MIN.regression} observations.</p>
+            <p className="text-sm text-muted-foreground">Régression non calculée : moins de {N_MIN.regression} observations.</p>
           )}
           <Note>
             La pente a estime la quantité produite par heure supplémentaire. r² indique la part de la variation de la production expliquée par les heures.
             Corrélation effectif / productivité horaire : {nombre(p.correlationEffectif, 3)}. Association statistique, pas forcément une relation de cause à effet.
           </Note>
         </Section>
-        <Section titre="Productivité horaire par tâche" description="Quantité validée ÷ heures travaillées, sur la période. Comparer seulement des tâches de même unité.">
+<Section titre="Productivité horaire par tâche" description="Quantité validée ÷ heures travaillées, sur la période. Comparer seulement des tâches de même unité.">
           <Tableau entetes={["Tâche", "n", "Productivité", "CV", "Régularité"]} vide={!p.parTache.length}>
             {p.parTache.map((t) => (
               <tr key={t.tacheId}>
@@ -109,10 +112,10 @@ export default async function Statistiques({ params }: { params: { id: string } 
             ))}
           </Tableau>
         </Section>
-      </div>
-
-      {/* 3. Séries chronologiques et prévision (§ 5.3, RG-93) */}
-      <Section titre="Prévision de la date de fin" description="Régression linéaire de l'avancement validé cumulé sur les jours ouvrés depuis le début.">
+</div>
+          ) },
+          { id: "prevision", titre: "Prévision", icone: "tendance", contenu: (
+<Section titre="Prévision de la date de fin" description="Régression linéaire de l'avancement validé cumulé sur les jours ouvrés depuis le début.">
         <div className="grid gap-4 sm:grid-cols-4 text-sm mb-4">
           <Mesure nom="Avancement validé" valeur={pct(a.global)} />
           <Mesure nom="Rythme moyen (pente a)" valeur={a.regression ? `${nombre(a.regression.a, 2)} pt / jour` : "—"} />
@@ -131,10 +134,9 @@ export default async function Statistiques({ params }: { params: { id: string } 
           Hypothèse : {a.fiabiliteFin}. La prévision n&apos;est donnée qu&apos;avec au moins {N_MIN.prevision} jours de production et r² ≥ 0,8.
         </Note>
       </Section>
-
-      {/* 4. Répartition et classification (§ 5.5) */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Section titre="Pareto des matériaux consommés (classes ABC)" description="Valeur consommée = sorties × prix moyen pondéré. Classe A jusqu'à 80 % du cumul.">
+          ) },
+          { id: "abc", titre: "Pareto matériaux", icone: "materiau", contenu: (
+<Section titre="Pareto des matériaux consommés (classes ABC)" description="Valeur consommée = sorties × prix moyen pondéré. Classe A jusqu'à 80 % du cumul.">
           <Pareto data={ind.abc.map((l) => ({ nom: l.designation.split(" ")[0], valeur: Math.round(l.valeur), cumul: +l.partCumulee.toFixed(1) }))} />
           <Tableau entetes={["Matériau", "Valeur", "Part", "Cumul", "Classe"]}>
             {ind.abc.map((l) => (
@@ -150,17 +152,18 @@ export default async function Statistiques({ params }: { params: { id: string } 
             ))}
           </Tableau>
         </Section>
-        <Section titre="Pareto des dépenses par catégorie" description="Identifier les postes qui pèsent le plus dans le budget.">
+          ) },
+          { id: "categories", titre: "Pareto dépenses", icone: "depense", contenu: (
+<Section titre="Pareto des dépenses par catégorie" description="Identifier les postes qui pèsent le plus dans le budget.">
           <Pareto data={f.parCategorie.map((c) => ({ nom: CATEGORIES_DEPENSE[c.categorie as keyof typeof CATEGORIES_DEPENSE], valeur: c.montant, cumul: +c.partCumulee.toFixed(1) }))} />
           <Note>
             Taux de justification : {pct(f.tauxJustification)}. Coût moyen journalier : {fcfa(f.coutMoyenJournalier)}. Écart budgétaire (coût réel − valeur planifiée) :{" "}
             {fcfa(f.ecartBudgetaire)}.
           </Note>
         </Section>
-      </div>
-
-      {/* 5. Matériaux : consommation et pertes (§ 4.2) */}
-      <Section titre="Consommation journalière des matériaux" description="Jours de consommation de la période. Taux de perte = pertes ÷ quantités reçues.">
+          ) },
+          { id: "conso", titre: "Consommation", icone: "stock", contenu: (
+<Section titre="Consommation journalière des matériaux" description="Jours de consommation de la période. Taux de perte = pertes ÷ quantités reçues.">
         <Tableau entetes={["Matériau", "n", "Moyenne", "Médiane", "Écart-type", "CV", "Taux de perte", "Prix moyen pondéré", "Variation du prix"]}>
           {ind.materiaux.map((m) => (
             <tr key={m.id}>
@@ -179,10 +182,9 @@ export default async function Statistiques({ params }: { params: { id: string } 
           ))}
         </Tableau>
       </Section>
-
-      {/* 6. Retards et présence */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Section titre="Répartition des retards" description="Jours de retard cumulés par lot et par cause déclarée (RG-55).">
+          ) },
+          { id: "retards", titre: "Retards", icone: "attente", contenu: (
+<Section titre="Répartition des retards" description="Jours de retard cumulés par lot et par cause déclarée (RG-55).">
           {a.retardParLot.length ? (
             <>
               <Barres data={a.retardParLot.map((r) => ({ lot: r.lot, jours: r.jours }))} x="lot" series={[{ cle: "jours", nom: "Jours de retard" }]} horizontal hauteur={200} />
@@ -196,28 +198,32 @@ export default async function Statistiques({ params }: { params: { id: string } 
               </Tableau>
             </>
           ) : (
-            <p className="text-sm text-zinc-500">Aucun retard constaté.</p>
+            <p className="text-sm text-muted-foreground">Aucun retard constaté.</p>
           )}
           <Note>
             {a.nTerminees} tâche(s) terminée(s), dont {pct(a.aTemps)} à temps. Retard moyen des tâches en retard : {nombre(a.retardMoyen, 1)} jour(s).
           </Note>
         </Section>
-        <Section titre="Taux de présence journalier" description="Heures réalisées ÷ heures prévues, équipe entière (aucune donnée individuelle).">
+          ) },
+          { id: "presence", titre: "Présence", icone: "presence", contenu: (
+<Section titre="Taux de présence journalier" description="Heures réalisées ÷ heures prévues, équipe entière (aucune donnée individuelle).">
           <Courbes data={ind.personnel.seriePresence.map((x) => ({ jour: jourCourt(x.date), taux: +x.taux.toFixed(1) }))} x="jour" series={[{ cle: "taux", nom: "Taux de présence (%)", couleur: "#06b6d4" }]} hauteur={220} />
           <Note>
             Moyenne {pct(ind.personnel.descriptifPresence.moyenne)}, écart-type {nombre(ind.personnel.descriptifPresence.ecartType, 1)} points, n ={" "}
             {ind.personnel.descriptifPresence.n}. Heures supplémentaires : {nombre(ind.personnel.heuresSup, 1)} h.
           </Note>
         </Section>
-      </div>
+          ) },
+        ]}
+      />
     </div>
   );
 }
 
 function Mesure({ nom, valeur }: { nom: string; valeur: string }) {
   return (
-    <div className="rounded-lg bg-zinc-50 dark:bg-zinc-800/50 px-3 py-2">
-      <p className="text-xs text-zinc-500">{nom}</p>
+    <div className="rounded-lg bg-muted/60 px-3 py-2">
+      <p className="text-xs text-muted-foreground">{nom}</p>
       <p className="font-semibold tabular-nums">{valeur}</p>
     </div>
   );

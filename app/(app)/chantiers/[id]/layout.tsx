@@ -23,7 +23,7 @@ export default async function LayoutChantier({ children, params }: { children: R
             <h1 className="text-2xl font-bold tracking-tight">{c.nom}</h1>
             <Pastille ton={tonStatut(c.statut === "EN_COURS" ? "VALIDEE" : c.statut)}>{STATUTS_CHANTIER[c.statut]}</Pastille>
           </div>
-          <p className="mt-1 flex flex-wrap items-center gap-x-2 text-sm text-zinc-500">
+          <p className="mt-1 flex flex-wrap items-center gap-x-2 text-sm text-muted-foreground">
             <span>{c.code}</span>·<span>{TYPES_CHANTIER[c.type]}</span>·
             <span className="flex items-center gap-1">
               <MapPin className="h-3.5 w-3.5" />
@@ -32,7 +32,7 @@ export default async function LayoutChantier({ children, params }: { children: R
           </p>
         </div>
         {s.role !== "MANOEUVRE" && (
-          <div className="text-right text-xs text-zinc-500">
+          <div className="text-right text-xs text-muted-foreground">
             <p>
               Du {date(c.dateDebutPrevue)} au {date(c.dateFinPrevue)}
             </p>

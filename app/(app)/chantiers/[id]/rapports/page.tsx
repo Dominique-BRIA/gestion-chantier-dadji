@@ -4,6 +4,7 @@ import { aujourdhui, cleJour, date } from "@/lib/format";
 import { STATUTS_SIGNALEMENT, STATUTS_VALIDATION, TYPES_SIGNALEMENT } from "@/lib/labels";
 import { creerSignalement, soumettreRapport, traiterSignalement, validerRapport } from "@/app/actions";
 import { ActionLigne, Bandeau, Bouton, Champ, Choix, Formulaire, Pastille, Section, Tableau, tonStatut } from "@/components/app/ui";
+import { Cadres, type Cadre } from "@/components/app/Cadres";
 
 const zone = "w-full rounded-lg border border-input bg-background px-3 py-2 text-sm";
 
@@ -20,38 +21,9 @@ export default async function Rapports({ params, searchParams }: { params: { id:
   ]);
   const typesPermis = s.role === "CLIENT" ? (["ANOMALIE", "DEMANDE_JUSTIFICATION"] as const) : (Object.keys(TYPES_SIGNALEMENT) as (keyof typeof TYPES_SIGNALEMENT)[]);
 
-  return (
-    <div className="space-y-6">
-      <Bandeau erreur={searchParams.erreur} ok={searchParams.ok} />
-      <div className="space-y-3">
-        {ouvert && s.role !== "CLIENT" && (
-          <Formulaire action={soumettreRapport} titre="Soumettre le rapport journalier (RG-65)" cache={cache}>
-            <Champ label="Date" name="date" type="date" defaultValue={cleJour(aujourdhui())} />
-            <Choix label="Météo" name="meteo" options={["Ensoleillé", "Nuageux", "Pluie", "Orage"].map((m) => [m, m])} />
-            <label className="space-y-1 text-sm sm:col-span-2 lg:col-span-3">
-              <span className="font-medium">Travaux réalisés</span>
-              <textarea name="travaux" required rows={2} className={zone} />
-            </label>
-            <label className="space-y-1 text-sm">
-              <span className="font-medium">Incidents</span>
-              <textarea name="incidents" rows={2} className={zone} />
-            </label>
-            <label className="space-y-1 text-sm sm:col-span-2">
-              <span className="font-medium">Observations</span>
-              <textarea name="observations" rows={2} className={zone} />
-            </label>
-          </Formulaire>
-        )}
-        <Formulaire action={creerSignalement} titre={s.role === "CLIENT" ? "Signaler une anomalie ou demander une justification" : "Créer un signalement"} cache={cache} bouton="Envoyer">
-          <Choix label="Type" name="type" options={typesPermis.map((k) => [k, TYPES_SIGNALEMENT[k]])} />
-          <label className="space-y-1 text-sm sm:col-span-2">
-            <span className="font-medium">Description</span>
-            <textarea name="description" required rows={2} className={zone} />
-          </label>
-        </Formulaire>
-      </div>
-
-      <Section titre="Signalements" description="Une demande d'examen, pas une accusation. L'ingénieur répond par écrit avant de clore (RG-70).">
+  const cadres: Cadre[] = [
+    { id: "signalements", titre: "Signalements", icone: "signalement", compte: signalements.filter((x) => x.statut !== "CLOS").length, contenu: (
+<Section titre="Signalements" description="Une demande d'examen, pas une accusation. L'ingénieur répond par écrit avant de clore (RG-70).">
         <Tableau entetes={["Date", "Auteur", "Type", "Description", "Statut", "Réponse"]} vide={!signalements.length}>
           {signalements.map((x) => (
             <tr key={x.id}>
@@ -74,15 +46,16 @@ export default async function Rapports({ params, searchParams }: { params: { id:
                     <Bouton className="h-7 px-2 text-xs">Clore</Bouton>
                   </form>
                 ) : (
-                  <span className="text-xs text-zinc-500">{x.reponse ?? "—"}</span>
+                  <span className="text-xs text-muted-foreground">{x.reponse ?? "—"}</span>
                 )}
               </td>
             </tr>
           ))}
         </Tableau>
       </Section>
-
-      <Section titre="Rapports journaliers" description={s.role === "CLIENT" ? "Rapports validés par l'ingénieur." : "Un rapport par jour ouvré ; un rapport manquant le lendemain à midi déclenche AL-11."}>
+    ) },
+    { id: "rapports", titre: "Rapports", icone: "rapport", compte: s.role === "INGENIEUR" ? rapports.filter((r) => r.statut === "EN_ATTENTE").length : undefined, contenu: (
+<Section titre="Rapports journaliers" description={s.role === "CLIENT" ? "Rapports validés par l'ingénieur." : "Un rapport par jour ouvré ; un rapport manquant le lendemain à midi déclenche AL-11."}>
         <Tableau entetes={["Date", "Météo", "Travaux", "Incidents", "Statut"]} vide={!rapports.length}>
           {rapports.map((r) => (
             <tr key={r.id}>
@@ -103,6 +76,40 @@ export default async function Rapports({ params, searchParams }: { params: { id:
           ))}
         </Tableau>
       </Section>
+    ) },
+    { id: "signaler", titre: "Signaler", icone: "plus", contenu: (
+<Formulaire action={creerSignalement} titre={s.role === "CLIENT" ? "Signaler une anomalie ou demander une justification" : "Créer un signalement"} cache={cache} bouton="Envoyer">
+          <Choix label="Type" name="type" options={typesPermis.map((k) => [k, TYPES_SIGNALEMENT[k]])} />
+          <label className="space-y-1 text-sm sm:col-span-2">
+            <span className="font-medium">Description</span>
+            <textarea name="description" required rows={2} className={zone} />
+          </label>
+        </Formulaire>
+    ) },
+  ];
+  if (ouvert && s.role !== "CLIENT") cadres.splice(2, 0, { id: "nouveau", titre: "Nouveau rapport", icone: "ajout", contenu: (
+<Formulaire action={soumettreRapport} titre="Rapport journalier" description="Un rapport par jour ouvré ; il est lu par le client une fois validé (RG-65)." cache={cache}>
+            <Champ label="Date" name="date" type="date" defaultValue={cleJour(aujourdhui())} />
+            <Choix label="Météo" name="meteo" options={["Ensoleillé", "Nuageux", "Pluie", "Orage"].map((m) => [m, m])} />
+            <label className="space-y-1 text-sm sm:col-span-2 lg:col-span-3">
+              <span className="font-medium">Travaux réalisés</span>
+              <textarea name="travaux" required rows={2} className={zone} />
+            </label>
+            <label className="space-y-1 text-sm">
+              <span className="font-medium">Incidents</span>
+              <textarea name="incidents" rows={2} className={zone} />
+            </label>
+            <label className="space-y-1 text-sm sm:col-span-2">
+              <span className="font-medium">Observations</span>
+              <textarea name="observations" rows={2} className={zone} />
+            </label>
+          </Formulaire>
+  ) });
+
+  return (
+    <div className="space-y-5">
+      <Bandeau erreur={searchParams.erreur} ok={searchParams.ok} />
+      <Cadres cadres={cadres} />
     </div>
   );
 }

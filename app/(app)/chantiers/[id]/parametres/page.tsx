@@ -4,6 +4,7 @@ import { SEUILS_DEFAUT, type Seuils } from "@/lib/indicateurs";
 import { STATUTS_CHANTIER } from "@/lib/labels";
 import { changerStatutChantier, modifierSeuils } from "@/app/actions";
 import { Bandeau, Bouton, Champ, Section, Tableau } from "@/components/app/ui";
+import { Cadres, type Cadre } from "@/components/app/Cadres";
 
 const ACTIONS: Record<string, [string, string][]> = {
   PREPARATION: [["EN_COURS", "Démarrer le chantier"]],
@@ -40,11 +41,9 @@ export default async function Parametres({ params, searchParams }: { params: { i
     take: 50,
   });
 
-  return (
-    <div className="space-y-6">
-      <Bandeau erreur={searchParams.erreur} ok={searchParams.ok} />
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Section titre="Cycle de vie du chantier" description={`Statut actuel : ${STATUTS_CHANTIER[chantier.statut]}. La clôture exige qu'aucune validation ne soit en attente (RG-11).`}>
+  const cadres: Cadre[] = [
+    { id: "cycle", titre: "Cycle de vie", icone: "chantier", contenu: (
+<Section titre="Cycle de vie du chantier" description={`Statut actuel : ${STATUTS_CHANTIER[chantier.statut]}. La clôture exige qu'aucune validation ne soit en attente (RG-11).`}>
           <div className="space-y-3">
             {ACTIONS[chantier.statut].map(([cible, label]) => (
               <form key={cible} action={changerStatutChantier} className="flex flex-wrap items-end gap-2">
@@ -55,10 +54,12 @@ export default async function Parametres({ params, searchParams }: { params: { i
                 <Bouton variante={cible === "TERMINE" ? "danger" : "primaire"}>{label}</Bouton>
               </form>
             ))}
-            {chantier.statut === "TERMINE" && <p className="text-sm text-zinc-500">Chantier clôturé : lecture seule.</p>}
+            {chantier.statut === "TERMINE" && <p className="text-sm text-muted-foreground">Chantier clôturé : lecture seule.</p>}
           </div>
         </Section>
-        <Section titre="Seuils de validation et d'alerte" description="Valeurs par défaut des règles de gestion, modifiables pour ce chantier (§ 10).">
+    ) },
+    { id: "seuils", titre: "Seuils", icone: "seuils", contenu: (
+<Section titre="Seuils de validation et d'alerte" description="Valeurs par défaut des règles de gestion, modifiables pour ce chantier (§ 10).">
           <form action={modifierSeuils} className="grid gap-3 sm:grid-cols-2 items-end">
             <input type="hidden" name="chantierId" value={chantier.id} />
             <input type="hidden" name="retour" value={retour} />
@@ -72,8 +73,9 @@ export default async function Parametres({ params, searchParams }: { params: { i
             </div>
           </form>
         </Section>
-      </div>
-      <Section titre="Journal d'audit" description="Qui a fait quoi, quand, avec l'ancienne et la nouvelle valeur. Écriture seule (RG-81).">
+    ) },
+    { id: "journal", titre: "Journal d'audit", icone: "journal", contenu: (
+<Section titre="Journal d'audit" description="Qui a fait quoi, quand, avec l'ancienne et la nouvelle valeur. Écriture seule (RG-81).">
         <Tableau entetes={["Date", "Auteur", "Action", "Objet", "Détail"]} vide={!journal.length}>
           {journal.map((j) => (
             <tr key={j.id}>
@@ -85,11 +87,18 @@ export default async function Parametres({ params, searchParams }: { params: { i
               <td className="text-xs">
                 {j.entite} n° {j.entiteId}
               </td>
-              <td className="text-xs text-zinc-500 font-mono max-w-md truncate">{j.nouvelleValeur}</td>
+              <td className="text-xs text-muted-foreground font-mono max-w-md truncate">{j.nouvelleValeur}</td>
             </tr>
           ))}
         </Tableau>
       </Section>
+    ) },
+  ];
+
+  return (
+    <div className="space-y-5">
+      <Bandeau erreur={searchParams.erreur} ok={searchParams.ok} />
+      <Cadres cadres={cadres} />
     </div>
   );
 }

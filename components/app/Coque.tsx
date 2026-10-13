@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { Building2, ChevronLeft, HardHat, LogOut, Menu, UserCircle, Users } from "lucide-react";
+import { Building2, ChevronLeft, LogOut, Menu, UserCircle2, Users } from "lucide-react";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { cn } from "@/lib/utils";
 
@@ -14,17 +14,25 @@ const ROLES: Record<string, string> = {
   MANOEUVRE: "Manœuvre",
 };
 
+const lien = (actif: boolean) =>
+  cn(
+    "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+    actif ? "bg-primary/10 text-primary dark:bg-primary/15" : "text-muted-foreground hover:bg-muted hover:text-foreground",
+  );
+
 /** Coquille d'alanya-admin : barre latérale repliable, en-tête, zone défilante. */
 export function Coque({
   nom,
   role,
   chantiers,
+  logo,
   deconnexion,
   children,
 }: {
   nom: string;
   role: string;
   chantiers: { id: number; code: string; nom: string }[];
+  logo: React.ReactNode;
   deconnexion: () => Promise<void>;
   children: React.ReactNode;
 }) {
@@ -35,62 +43,39 @@ export function Coque({
     ...(role === "INGENIEUR" ? [{ href: "/utilisateurs", label: "Utilisateurs", icon: Users, exact: false }] : []),
   ];
   return (
-    <div className="flex h-screen overflow-hidden bg-zinc-50 dark:bg-zinc-950">
-      <aside className={cn("hidden md:flex flex-col border-r bg-white dark:bg-zinc-900 dark:border-zinc-800 transition-all duration-300", replie ? "w-16" : "w-64")}>
-        <div className="flex items-center gap-3 px-4 h-16 border-b dark:border-zinc-800">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500">
-            <HardHat className="h-5 w-5 text-white" />
-          </div>
-          {!replie && <span className="text-lg font-bold tracking-tight">Chantiers</span>}
-        </div>
-        <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
-          {items.map((it) => {
-            const actif = it.exact ? chemin === it.href : chemin.startsWith(it.href);
-            return (
-              <Link
-                key={it.href}
-                href={it.href}
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
-                  actif ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300" : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800",
-                )}
-              >
-                <it.icon className="h-5 w-5 shrink-0" />
-                {!replie && it.label}
-              </Link>
-            );
-          })}
-          {!replie && chantiers.length > 0 && <p className="px-3 pt-4 pb-1 text-xs font-semibold uppercase tracking-wide text-zinc-400">Chantiers</p>}
-          {chantiers.map((c) => {
-            const actif = chemin.startsWith(`/chantiers/${c.id}`);
-            return (
-              <Link
-                key={c.id}
-                href={`/chantiers/${c.id}`}
-                title={c.nom}
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors",
-                  actif ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300 font-medium" : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800",
-                )}
-              >
-                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-zinc-100 dark:bg-zinc-800 text-[10px] font-bold">{c.code.slice(0, 1)}</span>
-                {!replie && <span className="truncate">{c.nom}</span>}
-              </Link>
-            );
-          })}
+    <div className="flex h-screen overflow-hidden bg-background">
+      <aside className={cn("hidden md:flex flex-col border-r border-border bg-card transition-all duration-300", replie ? "w-[72px]" : "w-64")}>
+        <Link href="/" className="flex items-center gap-3 px-4 h-16 border-b border-border">
+          {logo}
+          {!replie && <span className="font-bold tracking-tight leading-tight">Gestion de chantier</span>}
+        </Link>
+        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+          {items.map((it) => (
+            <Link key={it.href} href={it.href} className={lien(it.exact ? chemin === it.href : chemin.startsWith(it.href))}>
+              <it.icon className="h-5 w-5 shrink-0" />
+              {!replie && it.label}
+            </Link>
+          ))}
+          {!replie && chantiers.length > 0 && <p className="px-3 pt-5 pb-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/80">Chantiers</p>}
+          {chantiers.map((c) => (
+            <Link key={c.id} href={`/chantiers/${c.id}`} title={c.nom} className={lien(chemin.startsWith(`/chantiers/${c.id}`))}>
+              <Building2 className="h-5 w-5 shrink-0" />
+              {!replie && <span className="truncate">{c.nom}</span>}
+            </Link>
+          ))}
         </nav>
-        <div className="border-t dark:border-zinc-800 p-2 space-y-1">
+        <div className="border-t border-border p-3 space-y-1">
           {!replie && (
-            <div className="flex items-center gap-3 px-3 py-2 text-xs text-zinc-600 dark:text-zinc-400">
-              <UserCircle className="h-5 w-5 shrink-0 text-indigo-500" />
+            <div className="flex items-center gap-3 px-3 py-2 text-xs">
+              <UserCircle2 className="h-5 w-5 shrink-0 text-primary" />
               <div className="min-w-0">
                 <p className="truncate font-medium">{nom}</p>
-                <p className="text-zinc-400">{ROLES[role]}</p>
+                <p className="text-muted-foreground">{ROLES[role]}</p>
               </div>
             </div>
           )}
           <form action={deconnexion}>
-            <button className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/50 transition-colors">
+            <button className="flex items-center gap-3 w-full rounded-xl px-3 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40 transition-colors">
               <LogOut className="h-5 w-5 shrink-0" />
               {!replie && "Déconnexion"}
             </button>
@@ -98,19 +83,19 @@ export function Coque({
         </div>
       </aside>
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="flex items-center justify-between h-16 px-4 md:px-6 border-b bg-white dark:bg-zinc-900 dark:border-zinc-800">
-          <button onClick={() => setReplie(!replie)} className="hidden md:block p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-400" aria-label="Replier le menu">
+        <header className="flex items-center justify-between h-16 px-4 md:px-6 border-b border-border bg-card/80 backdrop-blur">
+          <button onClick={() => setReplie(!replie)} className="hidden md:block p-2 rounded-xl hover:bg-muted text-muted-foreground" aria-label="Replier le menu">
             {replie ? <Menu className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
           </button>
           <Link href="/chantiers" className="md:hidden flex items-center gap-2 font-bold">
-            <HardHat className="h-5 w-5 text-indigo-500" /> Chantiers
+            {logo} Chantiers
           </Link>
           <div className="flex items-center gap-2">
-            <span className="hidden sm:inline text-sm text-zinc-500">{ROLES[role]}</span>
+            <span className="hidden sm:flex items-center gap-1.5 text-sm text-muted-foreground">
+              <UserCircle2 className="h-4 w-4" />
+              {nom} · {ROLES[role]}
+            </span>
             <ThemeToggle />
-            <div className="h-8 w-8 rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center text-white text-xs font-bold">
-              {nom.split(" ").map((m) => m[0]).join("").slice(0, 2).toUpperCase()}
-            </div>
             <form action={deconnexion} className="md:hidden">
               <button className="p-2 text-red-600" aria-label="Déconnexion">
                 <LogOut className="h-5 w-5" />

@@ -87,12 +87,12 @@ export async function connexion(f: FormData) {
     maxAge: DUREE_SESSION_S,
     path: "/",
   });
-  redirect("/");
+  redirect("/espace");
 }
 
 export async function deconnexion() {
   cookies().delete(COOKIE_SESSION);
-  redirect("/login");
+  redirect("/");
 }
 
 // ------------------------------------------------------------------ Comptes (RG-02)
