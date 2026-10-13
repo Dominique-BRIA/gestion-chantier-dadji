@@ -5,6 +5,7 @@ import { ROLES } from "@/lib/labels";
 import { basculerActif, creerUtilisateur } from "@/app/actions";
 import { ActionLigne, Bandeau, Champ, Choix, Formulaire, Pastille, Section, Tableau } from "@/components/app/ui";
 import { Cadres } from "@/components/app/Cadres";
+import { MotDePasse } from "@/components/app/MotDePasse";
 
 export default async function Utilisateurs({ searchParams }: { searchParams: { erreur?: string; ok?: string } }) {
   await exigerSession(["INGENIEUR"]);
@@ -57,7 +58,7 @@ export default async function Utilisateurs({ searchParams }: { searchParams: { e
         <Champ label="Nom" name="nom" />
         <Champ label="Prénom" name="prenom" />
         <Champ label="Téléphone (identifiant)" name="telephone" />
-        <Champ label="Mot de passe provisoire" name="motDePasse" minLength={8} />
+        <MotDePasse name="motDePasse" label="Mot de passe provisoire" minLength={8} autoComplete="new-password" />
         <Champ label="E-mail" name="email" type="email" requis={false} />
         <Champ label="Métier (manœuvre)" name="metier" requis={false} placeholder="Maçon, ferrailleur…" />
         <Champ label="Taux journalier (FCFA)" name="tauxJournalier" type="number" requis={false} />

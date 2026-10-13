@@ -10,6 +10,7 @@ import { creerChantier } from "@/app/actions";
 import { Bandeau, Champ, Choix, Formulaire, Pastille, Section, Tableau, tonStatut } from "@/components/app/ui";
 import { Cadres, type Cadre } from "@/components/app/Cadres";
 import { Barres } from "@/components/app/graphiques";
+import { MotDePasse } from "@/components/app/MotDePasse";
 
 export default async function PageChantiers({ searchParams }: { searchParams: { erreur?: string; ok?: string } }) {
   const s = await exigerSession();
@@ -112,7 +113,7 @@ export default async function PageChantiers({ searchParams }: { searchParams: { 
           <Champ label="… ou nouveau client : nom" name="clientNom" requis={false} />
           <Champ label="Prénom" name="clientPrenom" requis={false} />
           <Champ label="Téléphone" name="clientTelephone" requis={false} />
-          <Champ label="Mot de passe provisoire" name="clientMotDePasse" requis={false} placeholder="8 caractères minimum" />
+          <MotDePasse name="clientMotDePasse" label="Mot de passe provisoire" requis={false} placeholder="8 caractères minimum" autoComplete="new-password" />
         </Formulaire>          ) } as Cadre] : []),
         ]}
       />

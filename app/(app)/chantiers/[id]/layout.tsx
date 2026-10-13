@@ -1,4 +1,4 @@
-import { MapPin } from "lucide-react";
+import { FileDown, MapPin } from "lucide-react";
 import { exigerChantier } from "@/lib/auth";
 import { date, fcfa } from "@/lib/format";
 import { STATUTS_CHANTIER, TYPES_CHANTIER } from "@/lib/labels";
@@ -38,6 +38,14 @@ export default async function LayoutChantier({ children, params }: { children: R
             </p>
             <p>Budget initial {fcfa(c.budgetInitial)}</p>
             {c.statut === "SUSPENDU" && <p className="text-amber-600">Suspendu : {c.motifSuspension}</p>}
+            {(s.role === "INGENIEUR" || s.role === "CLIENT") && (
+              <a
+                href={`/chantiers/${c.id}/rapport-pdf`}
+                className="mt-2 inline-flex items-center gap-2 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 px-3.5 h-9 text-sm font-semibold text-white shadow-[0_4px_14px_rgba(234,88,12,0.3)] hover:brightness-110"
+              >
+                <FileDown className="h-4 w-4" /> Rapport PDF
+              </a>
+            )}
           </div>
         )}
       </div>

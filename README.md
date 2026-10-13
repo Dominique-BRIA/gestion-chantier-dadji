@@ -22,6 +22,7 @@ statistiques d'aide à la décision. Projet de l'unité d'enseignement Statistiq
 | `lib/stats.ts` | Statistique pure : moyenne, médiane, mode, variance, quartiles, CV, boîte à moustaches, histogramme, corrélation, régression, moyenne mobile, Pareto, intervalle de confiance |
 | `lib/indicateurs.ts` | Indicateurs du cahier (§ 4 et § 5), valeur acquise (SPI, CPI), date de fin estimée et les 15 alertes |
 | `lib/*.test.ts` | 26 tests, dont un chantier fictif calculé à la main |
+| `lib/rapport-pdf.tsx` | Rapport de chantier en PDF (bouton « Rapport PDF », ingénieur et client) |
 
 ## Lancer en local
 
@@ -70,6 +71,8 @@ et recharger : `npm run db:seed -- --reinitialiser`.
    (de la forme `https://s3.eu-central-003.backblazeb2.com`, affiché sur la page du compartiment).
 
 Sans ces variables, l'application fonctionne : on saisit seulement la référence du justificatif.
+
+Contrôle de la configuration : `npx tsx --env-file=.env scripts/tester-stockage.ts` (dépose, relit puis supprime un petit PDF).
 
 ### 3. Application sur Vercel
 

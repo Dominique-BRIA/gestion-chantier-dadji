@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { ArrowLeft, Lock, LogIn, Phone } from "lucide-react";
+import { ArrowLeft, LogIn, Phone } from "lucide-react";
 import { connexion } from "@/app/actions";
 import { Bandeau } from "@/components/app/ui";
 import { Logo } from "@/components/app/Logo";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
+import { MotDePasse } from "@/components/app/MotDePasse";
 
 const champ =
   "h-11 w-full rounded-xl border border-input bg-background/60 pl-10 pr-3 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
@@ -35,13 +36,7 @@ export default function PageConnexion({ searchParams }: { searchParams: { erreur
               <input name="telephone" inputMode="tel" required autoComplete="username" placeholder="6XX XXX XXX" className={champ} />
             </span>
           </label>
-          <label className="block space-y-1.5 text-sm">
-            <span className="font-medium">Mot de passe</span>
-            <span className="relative block">
-              <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <input name="motDePasse" type="password" required autoComplete="current-password" placeholder="Votre mot de passe" className={champ} />
-            </span>
-          </label>
+          <MotDePasse name="motDePasse" label="Mot de passe" icone placeholder="Votre mot de passe" />
           <button className="mt-2 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 text-sm font-semibold text-white shadow-[0_4px_14px_rgba(234,88,12,0.4)] hover:brightness-110">
             <LogIn className="h-4 w-4" /> Se connecter
           </button>

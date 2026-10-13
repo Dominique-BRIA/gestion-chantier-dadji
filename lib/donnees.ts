@@ -9,7 +9,7 @@ export async function chargerDonnees(chantierId: number): Promise<Donnees> {
       avenants: { orderBy: { date: "desc" }, take: 1 },
       depenses: true,
       avances: true,
-      taches: { include: { productions: true } },
+      taches: { include: { productions: true }, orderBy: { ordre: "asc" } },
       materiaux: true,
       mouvements: true,
       inventaires: true,
