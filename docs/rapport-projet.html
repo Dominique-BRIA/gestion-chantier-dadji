@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Rapport de projet - Système d'information de gestion de chantier</title>
+<link rel="stylesheet" href="style-documents.css">
+</head>
+<body>
+
+<section class="garde">
+  <div>
+    <div class="logo"><img src="../public/logo.png" alt="Logo"></div>
+    <h1>Système d'information<br>de gestion de chantier</h1>
+    <p class="sous" style="text-align:center">Suivi des matériaux, des finances, des travaux et du personnel,<br>indicateurs statistiques et aide à la décision</p>
+    <span class="ue">Unité d'enseignement Statistique — Rapport de projet</span>
+  </div>
+  <div class="bas">
+    <table>
+      <tr><td style="width:40%"><b>Application en ligne</b></td><td>https://dadji.vercel.app</td></tr>
+      <tr><td><b>Code source</b></td><td>github.com/Dominique-BRIA/gestion-chantier-dadji</td></tr>
+      <tr><td><b>Présenté par</b></td><td>........................................................</td></tr>
+      <tr><td><b>Enseignant</b></td><td>........................................................</td></tr>
+      <tr><td><b>Date</b></td><td>Octobre 2026</td></tr>
+    </table>
+  </div>
+</section>
+
+<section class="chapitre sommaire">
+  <h2>Sommaire</h2>
+  <ol>
+    <li><span>1. Introduction et objectifs</span></li>
+    <li><span>2. Analyse : acteurs, responsabilités et droits</span></li>
+    <li><span>3. Conception du système d'information</span></li>
+    <li><span>4. Règles de gestion</span></li>
+    <li><span>5. Méthodes statistiques et formules</span></li>
+    <li><span>6. Étude de cas : le chantier « Villa R+1 Mendong »</span></li>
+    <li><span>7. Aide à la décision : les alertes</span></li>
+    <li><span>8. Réalisation technique</span></li>
+    <li><span>9. Validation et tests</span></li>
+    <li><span>10. Limites et perspectives</span></li>
+    <li><span>11. Conclusion</span></li>
+    <li><span>Annexe : écrans de l'application</span></li>
+  </ol>
+  <div class="encadre info">
+    Les chiffres de l'étude de cas proviennent d'un <b>jeu de données fictives</b> généré pour la démonstration (deux chantiers, environ cinquante jours d'activité). Ils illustrent les calculs ; ce ne sont pas des résultats réels de chantier.
+  </div>
+</section>
+
+<section class="chapitre">
+  <h2>1. Introduction et objectifs</h2>
+  <p>Sur un chantier, l'argent, les matériaux, les travaux et les heures de travail sont suivis séparément, souvent sur papier. L'ingénieur découvre trop tard qu'un matériau va manquer, que le budget avance plus vite que les travaux, ou qu'une dépense n'a pas de justificatif.</p>
+  <p>Ce projet réalise un <b>système d'information de pilotage de chantier</b> : une application web qui collecte les observations du terrain, les conserve avec leur historique, calcule des indicateurs statistiques et signale les écarts qui demandent une décision.</p>
+  <h3>Questions auxquelles le système répond</h3>
+  <ul>
+    <li>Le chantier avance-t-il au rythme prévu ? Quand finira-t-il au rythme actuel ?</li>
+    <li>Combien a-t-on dépensé, et quelle trésorerie reste réellement disponible ?</li>
+    <li>Les matériaux achetés sont-ils consommés, perdus, ou en stock ? Combien de jours d'autonomie reste-t-il ?</li>
+    <li>Quel est le niveau de présence et de productivité des équipes ?</li>
+    <li>Faut-il demander une nouvelle avance au client ?</li>
+    <li>Quels postes de dépense et quels matériaux pèsent le plus ?</li>
+  </ul>
+  <h3>Démarche suivie</h3>
+  <p>Le travail a suivi les six étapes du cahier de conception : définition du périmètre, rédaction des règles de gestion, modélisation des données, conception des interfaces, test des calculs sur un jeu de données vérifié à la main, puis développement progressif et déploiement.</p>
+  <table>
+    <tr><th style="width:35%">Décision de périmètre</th><th>Choix retenu</th></tr>
+    <tr><td>Type de chantier</td><td>Choisi par l'ingénieur à la création : bâtiment, route, ouvrage d'art, assainissement/VRD, autre</td></tr>
+    <tr><td>Plateforme</td><td>Application web, utilisable sur ordinateur et téléphone</td></tr>
+    <tr><td>Organisation</td><td>Un ingénieur gère plusieurs chantiers ; chaque chantier a son propre client</td></tr>
+    <tr><td>Matériaux</td><td>Enregistrés par l'ingénieur pour chaque chantier ; pas de transfert entre chantiers</td></tr>
+    <tr><td>Jours ouvrés</td><td>Du lundi au dimanche ; le chef de chantier peut déclarer un jour de repos par semaine</td></tr>
+    <tr><td>Inventaire</td><td>Chaque semaine, pour chaque matériau</td></tr>
+  </table>
+</section>
+
+<section class="chapitre">
+  <h2>2. Analyse : acteurs, responsabilités et droits</h2>
+  <div class="grille2">
+    <div class="carte"><b>Ingénieur (super administrateur)</b><br>Crée les chantiers, les comptes, les tâches et les matériaux ; fixe le budget et les seuils ; valide les dépenses, les avances, les productions et les inventaires ; consulte toutes les statistiques ; clôture le chantier.</div>
+    <div class="carte"><b>Client (maître d'ouvrage)</b><br>Suit l'avancement de son chantier ; déclare ses avances de fonds ; consulte les dépenses validées et leurs justificatifs ; signale une anomalie ou demande une justification.</div>
+    <div class="carte"><b>Chef de chantier</b><br>Saisit chaque jour les mouvements de stock, les dépenses, la production, les présences et le rapport journalier ; fait l'inventaire hebdomadaire ; déclare le jour de repos.</div>
+    <div class="carte"><b>Manœuvre</b><br>Pointe sa présence ; consulte les tâches en cours et signale leur fin ; signale un manque de matériau, une perte ou un incident.</div>
+  </div>
+  <h3>Matrice des droits (extrait)</h3>
+  <table>
+    <tr><th>Objet</th><th>Ingénieur</th><th>Client</th><th>Chef de chantier</th><th>Manœuvre</th></tr>
+    <tr><td>Chantier</td><td>Créer, modifier, clôturer</td><td>Lire</td><td>Lire</td><td>Lire</td></tr>
+    <tr><td>Mouvements de stock</td><td>Créer, lire, corriger</td><td>Lire</td><td>Créer, lire</td><td>—</td></tr>
+    <tr><td>Dépenses</td><td>Créer, valider, payer</td><td>Lire les validées</td><td>Créer, lire</td><td>—</td></tr>
+    <tr><td>Avances</td><td>Saisir, confirmer</td><td>Déclarer, lire</td><td>—</td><td>—</td></tr>
+    <tr><td>Productions</td><td>Valider</td><td>Lire les validées</td><td>Déclarer</td><td>Signaler une fin de tâche</td></tr>
+    <tr><td>Présences</td><td>Lire, corriger</td><td>Taux global seulement</td><td>Saisir</td><td>Pointer, lire les siennes</td></tr>
+    <tr><td>Statistiques et alertes</td><td>Tout</td><td>Son chantier, sans données individuelles</td><td>Tableau de bord</td><td>—</td></tr>
+    <tr><td>Rapport PDF</td><td>Oui</td><td>Oui</td><td>—</td><td>—</td></tr>
+  </table>
+  <p>Chaque droit est contrôlé <b>par le serveur</b>, et pas seulement masqué dans l'interface : une requête hors périmètre reçoit une page « introuvable », sans révéler l'existence du chantier.</p>
+  <h3>Les neuf modules</h3>
+  <table>
+    <tr><th style="width:32%">Module</th><th>Contenu</th></tr>
+    <tr><td>Chantiers</td><td>Identité, type, budget, dates, cycle de vie (préparation, en cours, suspendu, terminé), avenants au budget</td></tr>
+    <tr><td>Matériaux et stock</td><td>Entrées, sorties, pertes, retours fournisseur, corrections, inventaires hebdomadaires</td></tr>
+    <tr><td>Finances</td><td>Avances du client, dépenses engagées et payées, justificatifs scannés</td></tr>
+    <tr><td>Tâches et avancement</td><td>Lots, tâches, quantités prévues, production journalière, validation, retards et causes</td></tr>
+    <tr><td>Personnel</td><td>Affectations, présences, heures supplémentaires, jours de repos</td></tr>
+    <tr><td>Statistiques</td><td>Tableau de bord, statistique descriptive, régression, prévision, Pareto</td></tr>
+    <tr><td>Contrôle et validation</td><td>Validation des dépenses, avances, productions, inventaires et rapports</td></tr>
+    <tr><td>Alertes</td><td>Quinze alertes avec leur règle, leur période et la décision suggérée</td></tr>
+    <tr><td>Rapports et historique</td><td>Rapports journaliers, signalements, journal d'audit, rapport de chantier en PDF</td></tr>
+  </table>
+</section>
+
+<section class="chapitre">
+  <h2>3. Conception du système d'information</h2>
+  <h3>Modèle des données</h3>
+  <p>Le modèle compte <b>17 tables</b>. Toute observation porte une date, pour alimenter les séries chronologiques.</p>
+  <table>
+    <tr><th style="width:24%">Entité</th><th>Informations principales</th></tr>
+    <tr><td>Utilisateur</td><td>Identité, téléphone (identifiant), rôle, métier, taux journalier, état actif</td></tr>
+    <tr><td>Chantier</td><td>Code, nom, type, localisation, budget initial, dates prévues et réelles, statut, seuils</td></tr>
+    <tr><td>Avenant</td><td>Nouveau budget, motif, date, auteur</td></tr>
+    <tr><td>Affectation</td><td>Utilisateur, chantier, fonction, période</td></tr>
+    <tr><td>Tache</td><td>Lot, désignation, unité, quantité et coût prévus, dates prévues et réelles, cause de retard</td></tr>
+    <tr><td>Production</td><td>Tâche, date, quantité réalisée, heures, effectif, statut de validation</td></tr>
+    <tr><td>Materiau</td><td>Désignation, unité, catégorie, prix de référence, délai de livraison, seuil d'alerte</td></tr>
+    <tr><td>MouvementStock</td><td>Type, quantité, prix unitaire, date, tâche consommatrice, mouvement corrigé</td></tr>
+    <tr><td>Inventaire</td><td>Stock théorique, stock physique, date, validation</td></tr>
+    <tr><td>Avance</td><td>Montant, date, mode de paiement, référence, statut</td></tr>
+    <tr><td>Depense</td><td>Catégorie, montant, date, justificatif, fichier, statut, date de paiement, mouvement lié</td></tr>
+    <tr><td>Presence</td><td>Ouvrier, date, statut, heures prévues et réalisées, confirmation</td></tr>
+    <tr><td>JourRepos</td><td>Chantier, date (un par semaine)</td></tr>
+    <tr><td>RapportJournalier</td><td>Date, météo, travaux, incidents, observations, statut</td></tr>
+    <tr><td>Signalement</td><td>Type, description, statut, réponse</td></tr>
+    <tr><td>Validation</td><td>Objet, décision, responsable, date, commentaire</td></tr>
+    <tr><td>JournalAudit</td><td>Auteur, action, objet, ancienne et nouvelle valeur, date</td></tr>
+  </table>
+  <h3>Relations principales</h3>
+  <ul>
+    <li>Un ingénieur dirige plusieurs chantiers ; un chantier a un seul client.</li>
+    <li>Un chantier a plusieurs affectations, tâches, matériaux, avances, dépenses, présences et rapports.</li>
+    <li>Une tâche reçoit plusieurs déclarations de production dans le temps.</li>
+    <li>Un matériau a de nombreux mouvements ; une entrée de stock achetée crée une dépense liée.</li>
+    <li>Une présence est unique par ouvrier et par jour (contrainte d'unicité en base).</li>
+  </ul>
+  <h3>Principes de qualité des données</h3>
+  <ul>
+    <li><b>Rien ne s'efface</b> : une erreur se corrige par une opération opposée qui référence l'opération d'origine.</li>
+    <li><b>Déclaré n'est pas validé</b> : la production, les dépenses au-dessus du seuil et les avances attendent la décision de l'ingénieur ; seules les données validées entrent dans les indicateurs.</li>
+    <li><b>Traçabilité</b> : toute écriture laisse une ligne au journal d'audit.</li>
+    <li><b>Unités cohérentes</b> : l'unité d'un matériau est figée après son premier mouvement ; aucune conversion implicite.</li>
+  </ul>
+</section>
+
+<section class="chapitre">
+  <h2>4. Règles de gestion</h2>
+  <p>Le document <code>docs/REGLES-DE-GESTION.md</code> du dépôt détaille 94 règles numérotées (RG-01 à RG-94). Le code cite le numéro de la règle qu'il applique. Les règles essentielles :</p>
+  <table>
+    <tr><th style="width:14%">Règle</th><th>Contenu</th></tr>
+    <tr><td>RG-22</td><td>Une sortie, une perte ou un retour ne peut pas dépasser le stock théorique.</td></tr>
+    <tr><td>RG-23</td><td>Une entrée de stock achetée crée automatiquement la dépense correspondante : finances et stock sont rapprochés.</td></tr>
+    <tr><td>RG-24</td><td>Un mouvement erroné se corrige par une opération opposée, le jour même par son auteur, ensuite par l'ingénieur.</td></tr>
+    <tr><td>RG-25</td><td>Inventaire hebdomadaire ; sa validation aligne le stock théorique par une correction tracée.</td></tr>
+    <tr><td>RG-30</td><td>Le client déclare son avance ; l'ingénieur confirme la réception. Seule une avance validée entre dans la trésorerie.</td></tr>
+    <tr><td>RG-41</td><td>Une dépense sous le seuil du chantier (250 000 FCFA par défaut) est validée automatiquement ; au-delà, l'ingénieur décide.</td></tr>
+    <tr><td>RG-43</td><td>Budget consommé = dépenses validées ; trésorerie = avances validées − dépenses payées.</td></tr>
+    <tr><td>RG-53</td><td>Seules les productions validées comptent dans l'avancement.</td></tr>
+    <tr><td>RG-55</td><td>L'avancement global est pondéré par le coût prévu des tâches ; une tâche finie en retard exige sa cause.</td></tr>
+    <tr><td>RG-63</td><td>Tous les jours sont ouvrés ; un jour de repos par semaine peut être déclaré à l'avance.</td></tr>
+    <tr><td>RG-80</td><td>Une saisie du jour J est modifiable jusqu'au lendemain ; au-delà, seul l'ingénieur corrige.</td></tr>
+    <tr><td>RG-91</td><td>Effectifs minimaux : 3 pour une moyenne, 5 pour la dispersion, 10 pour une boîte à moustaches, 7 pour une régression.</td></tr>
+  </table>
+</section>
+
+<section class="chapitre">
+  <h2>5. Méthodes statistiques et formules</h2>
+  <p>Toutes les formules sont écrites dans <code>lib/stats.ts</code> (statistique générale) et <code>lib/indicateurs.ts</code> (indicateurs du chantier). Chaque indicateur affiche sa période, son unité et son effectif <i>n</i>. Une division par zéro affiche « non calculable », jamais 0.</p>
+  <h3>5.1 Tendance centrale</h3>
+  <table>
+    <tr><th style="width:26%">Mesure</th><th style="width:34%">Formule</th><th>Usage dans l'application</th></tr>
+    <tr><td>Moyenne</td><td class="formule">x̄ = Σxᵢ / n</td><td>Dépense journalière, consommation journalière</td></tr>
+    <tr><td>Moyenne pondérée</td><td class="formule">Σ(xᵢ·wᵢ) / Σwᵢ</td><td>Avancement global pondéré par le coût des tâches</td></tr>
+    <tr><td>Médiane</td><td class="formule">Quantile d'ordre 0,5</td><td>Niveau central, peu sensible aux journées extrêmes</td></tr>
+    <tr><td>Mode</td><td class="formule">Valeur la plus fréquente</td><td>Montant de dépense récurrent</td></tr>
+  </table>
+  <h3>5.2 Dispersion</h3>
+  <table>
+    <tr><th style="width:26%">Mesure</th><th style="width:34%">Formule</th><th>Usage</th></tr>
+    <tr><td>Variance, écart-type</td><td class="formule">σ² = Σ(xᵢ − x̄)² / n</td><td>Description de la période observée (divisée par n − 1 pour estimer)</td></tr>
+    <tr><td>Étendue</td><td class="formule">max − min</td><td>Amplitude des dépenses</td></tr>
+    <tr><td>Quartiles, IQR</td><td class="formule">Interpolation linéaire ; IQR = Q3 − Q1</td><td>Même méthode que QUARTILE.INCLUS du tableur</td></tr>
+    <tr><td>Coefficient de variation</td><td class="formule">CV = σ / x̄ × 100</td><td>&lt; 15 % homogène ; 15 à 30 % modéré ; &gt; 30 % irrégulier</td></tr>
+    <tr><td>Boîte à moustaches</td><td class="formule">Atypique si x &lt; Q1 − 1,5·IQR ou x &gt; Q3 + 1,5·IQR</td><td>Journées et dépenses atypiques (règle de Tukey)</td></tr>
+    <tr><td>Histogramme</td><td class="formule">k = 1 + log₂(n) classes (Sturges)</td><td>Distribution des dépenses journalières</td></tr>
+  </table>
+  <h3>5.3 Inférence, liaison et séries chronologiques</h3>
+  <table>
+    <tr><th style="width:26%">Méthode</th><th style="width:34%">Formule</th><th>Usage</th></tr>
+    <tr><td>Intervalle de confiance à 95 %</td><td class="formule">x̄ ± t(n−1) · s / √n</td><td>Précision de la dépense journalière moyenne (loi de Student)</td></tr>
+    <tr><td>Corrélation de Pearson</td><td class="formule">r = cov(x, y) / (σx · σy)</td><td>Effectif et productivité horaire</td></tr>
+    <tr><td>Régression linéaire</td><td class="formule">a = cov(x, y) / var(x) ; b = ȳ − a·x̄</td><td>Heures et quantité produite ; avancement et temps</td></tr>
+    <tr><td>Coefficient de détermination</td><td class="formule">r²</td><td>Part de la variation expliquée</td></tr>
+    <tr><td>Moyenne mobile</td><td class="formule">Moyenne des 7 derniers jours</td><td>Tendance des dépenses</td></tr>
+    <tr><td>Prévision de fin</td><td class="formule">Jour où a·t + b atteint 100 %</td><td>Donnée seulement si n ≥ 10 et r² ≥ 0,8</td></tr>
+  </table>
+  <h3>5.4 Répartition et indicateurs de gestion</h3>
+  <table>
+    <tr><th style="width:26%">Indicateur</th><th style="width:34%">Formule</th><th>Usage</th></tr>
+    <tr><td>Pareto et classes ABC</td><td class="formule">Tri décroissant, cumul ; A jusqu'à 80 %, B jusqu'à 95 %</td><td>Postes de dépense et matériaux les plus coûteux</td></tr>
+    <tr><td>Autonomie du stock</td><td class="formule">stock / consommation moyenne (10 jours)</td><td>Date de commande (comparée au délai de livraison)</td></tr>
+    <tr><td>Taux de perte</td><td class="formule">pertes / quantités reçues × 100</td><td>Qualité du stockage</td></tr>
+    <tr><td>Prix moyen pondéré</td><td class="formule">Σ(qté × prix) / Σ qté</td><td>Coût moyen des achats</td></tr>
+    <tr><td>Taux de présence</td><td class="formule">heures réalisées / heures prévues × 100</td><td>Assiduité de l'équipe</td></tr>
+    <tr><td>Productivité horaire</td><td class="formule">quantité / heures travaillées</td><td>Comparée seulement entre tâches de même unité</td></tr>
+    <tr><td>Valeur acquise : SPI</td><td class="formule">valeur acquise / valeur planifiée</td><td>&lt; 1 : en retard sur le planning</td></tr>
+    <tr><td>Valeur acquise : CPI</td><td class="formule">valeur acquise / coût réel</td><td>&lt; 1 : les travaux coûtent plus que prévu</td></tr>
+  </table>
+</section>
+
+<section class="chapitre">
+  <h2>6. Étude de cas : le chantier « Villa R+1 Mendong »</h2>
+  <p>Chantier de bâtiment de 45 000 000 FCFA, prévu du 25/08/2026 au 23/12/2026, observé au 13/10/2026 après 43 jours ouvrés. La période d'analyse statistique couvre les 30 derniers jours.</p>
+  <h3>6.1 Synthèse</h3>
+  <table>
+    <tr><th>Indicateur</th><th>Valeur</th><th>Lecture</th></tr>
+    <tr><td>Budget consommé</td><td>37,2 %</td><td>16,7 millions de FCFA de dépenses validées</td></tr>
+    <tr><td>Avancement validé / prévu</td><td>31,7 % / 40,6 %</td><td>Le chantier a environ 9 points de retard sur le planning</td></tr>
+    <tr><td>SPI</td><td>0,78</td><td>22 % de travaux en moins que prévu à cette date</td></tr>
+    <tr><td>CPI</td><td>0,79</td><td>Chaque franc dépensé produit 0,79 franc de travaux prévus ; s'explique en partie par le stock acheté d'avance</td></tr>
+    <tr><td>Trésorerie disponible</td><td>7 734 460 FCFA</td><td>Environ 12 jours au rythme de dépense récent</td></tr>
+    <tr><td>Fin estimée</td><td>02/01/2027</td><td>Dix jours après la fin prévue</td></tr>
+  </table>
+  <h3>6.2 Statistique descriptive des dépenses journalières</h3>
+  <table>
+    <tr><th>n</th><th>Moyenne</th><th>Médiane</th><th>Écart-type</th><th>Q1</th><th>Q3</th><th>CV</th><th>IC à 95 %</th></tr>
+    <tr><td>24</td><td>475 283</td><td>302 770</td><td>578 069</td><td>50 875</td><td>544 780</td><td>121,6 %</td><td>225 895 à 724 672</td></tr>
+  </table>
+  <p><b>Interprétation.</b> La moyenne (475 283 FCFA) dépasse nettement la médiane (302 770 FCFA) : la distribution est étirée vers la droite par quelques jours de gros achats et par la paie du samedi. Le coefficient de variation de 121,6 % classe la série comme <b>très irrégulière</b> ; la médiane décrit donc mieux une journée ordinaire que la moyenne. L'intervalle de confiance est large (de 226 000 à 725 000 FCFA) parce que la dispersion est forte et que n reste modeste. Trois journées dépassent la borne de Tukey (1 285 638 FCFA) : elles sont signalées pour examen, jamais retirées du calcul.</p>
+  <h3>6.3 Régression et corrélation</h3>
+  <p><b>Avancement en fonction du temps</b> : avancement = 0,84 × jour − 2,73, avec r² = 0,983 sur n = 43 jours. Le rythme est très régulier (0,84 point d'avancement par jour ouvré) et la droite explique 98 % de la variation : la prévision de fin au 02/01/2027 est jugée fiable, sous l'hypothèse que ce rythme se maintient.</p>
+  <p><b>Heures travaillées et quantité produite</b> (tâche « Semelles et longrines en béton armé ») : y = 0,007 x + 1,31, r = 0,423, r² = 0,179, n = 20. Les heures n'expliquent que 18 % de la variation de la production : d'autres facteurs pèsent davantage (approvisionnement, météo, nature du travail).</p>
+  <p><b>Effectif et productivité horaire</b> : r = −0,821. Plus l'équipe est nombreuse sur la tâche, plus la production par heure baisse. C'est une <b>association</b>, pas une preuve de cause à effet ; elle suggère toutefois d'examiner l'organisation des équipes nombreuses.</p>
+  <h3>6.4 Répartition des dépenses (Pareto)</h3>
+  <table>
+    <tr><th>Catégorie</th><th>Part</th><th>Cumul</th><th>Classe</th></tr>
+    <tr><td>Matériaux</td><td>75,3 %</td><td>75,3 %</td><td>A</td></tr>
+    <tr><td>Main-d'œuvre</td><td>12,5 %</td><td>87,8 %</td><td>A</td></tr>
+    <tr><td>Divers</td><td>4,4 %</td><td>92,2 %</td><td>B</td></tr>
+    <tr><td>Transport</td><td>4,0 %</td><td>96,2 %</td><td>B</td></tr>
+    <tr><td>Location de matériel</td><td>3,8 %</td><td>100 %</td><td>C</td></tr>
+  </table>
+  <p>Deux postes concentrent près de 88 % des dépenses : c'est sur les achats de matériaux et l'organisation de la main-d'œuvre que les économies sont possibles.</p>
+  <h3>6.5 Matériaux</h3>
+  <table>
+    <tr><th>Matériau</th><th>Stock</th><th>Autonomie</th><th>Perte</th><th>Prix moyen pondéré</th><th>Hausse du prix</th></tr>
+    <tr><td>Ciment CPJ 42,5</td><td>527 sacs</td><td>46,2 j</td><td>0,1 %</td><td>5 651 FCFA</td><td>3,9 %</td></tr>
+    <tr><td>Sable</td><td>33,5 m³</td><td>35,8 j</td><td>0,3 %</td><td>12 255 FCFA</td><td>3,6 %</td></tr>
+    <tr><td>Gravier 15/25</td><td>20,7 m³</td><td>23,6 j</td><td>0,2 %</td><td>18 678 FCFA</td><td>7,1 %</td></tr>
+    <tr><td>Fer HA 10</td><td>226 barres</td><td>20,7 j</td><td>0,3 %</td><td>4 965 FCFA</td><td>5,3 %</td></tr>
+    <tr><td>Parpaing de 15</td><td>2 403</td><td>11,8 j</td><td>0,0 %</td><td>475 FCFA</td><td>7,8 %</td></tr>
+  </table>
+  <p>Le stock de ciment couvre 46 jours : une partie du budget est immobilisée en stock, ce qui explique le CPI inférieur à 1 sans qu'il y ait gaspillage. Le parpaing, avec 12 jours d'autonomie, sera le prochain matériau à commander.</p>
+  <h3>6.6 Personnel</h3>
+  <p>Taux de présence de 95,2 % (écart-type de 6,2 points entre les jours), 51,9 heures supplémentaires sur la période. Le coût théorique de la main-d'œuvre (2 186 300 FCFA, calculé à partir des présences) est proche du coût payé (2 084 300 FCFA) : l'écart de 4,7 % correspond à la paie de la semaine en cours, pas encore versée.</p>
+</section>
+
+<section class="chapitre">
+  <h2>7. Aide à la décision : les alertes</h2>
+  <p>Quinze alertes traduisent les situations du cahier de conception en règles chiffrées. Chaque alerte affiche la règle déclenchée, la période étudiée, la décision suggérée et la personne habilitée à la traiter. Une alerte est un <b>signal à examiner</b>, jamais une preuve de faute.</p>
+  <table>
+    <tr><th style="width:9%">Code</th><th style="width:30%">Situation</th><th>Règle de déclenchement</th></tr>
+    <tr><td>AL-01</td><td>Rupture de stock prévisible</td><td>Autonomie &lt; seuil d'alerte ; critique si &lt; délai de livraison</td></tr>
+    <tr><td>AL-02</td><td>Pertes en hausse</td><td>Taux de perte sur 14 jours &gt; 5 % et en hausse</td></tr>
+    <tr><td>AL-03</td><td>Dépenses plus rapides que les travaux</td><td>Budget consommé − avancement &gt; 10 points</td></tr>
+    <tr><td>AL-04</td><td>Rendement en baisse</td><td>Productivité en baisse 3 jours de suite</td></tr>
+    <tr><td>AL-05</td><td>Retards concentrés</td><td>Un lot porte au moins 50 % des jours de retard</td></tr>
+    <tr><td>AL-06</td><td>Dépense inhabituelle</td><td>Montant &gt; Q3 + 1,5 × IQR de sa catégorie (n ≥ 10)</td></tr>
+    <tr><td>AL-07</td><td>Trésorerie insuffisante</td><td>Moins de 7 jours de dépenses couverts</td></tr>
+    <tr><td>AL-08</td><td>Travaux non validés</td><td>Production en attente depuis plus de 3 jours</td></tr>
+    <tr><td>AL-09</td><td>Budget presque épuisé</td><td>Budget consommé ≥ 90 %</td></tr>
+    <tr><td>AL-10</td><td>Dépassement de délai prévisible</td><td>Fin estimée par régression après la fin prévue</td></tr>
+    <tr><td>AL-11</td><td>Rapport manquant</td><td>Pas de rapport journalier la veille</td></tr>
+    <tr><td>AL-12</td><td>Écart d'inventaire</td><td>|écart| &gt; 2 % du stock théorique</td></tr>
+    <tr><td>AL-13</td><td>Dépense non justifiée</td><td>Sans justificatif depuis plus de 48 heures</td></tr>
+    <tr><td>AL-14</td><td>Présence faible</td><td>Taux de présence du jour &lt; 80 %</td></tr>
+    <tr><td>AL-15</td><td>Inventaire en retard</td><td>Plus de 7 jours sans inventaire validé</td></tr>
+  </table>
+  <h3>Alertes actives sur le chantier étudié et décisions</h3>
+  <table>
+    <tr><th style="width:9%">Code</th><th style="width:42%">Constat</th><th>Décision suggérée</th></tr>
+    <tr><td>AL-05</td><td>Le lot Fondations porte 12 des 24 jours de retard (50 %)</td><td>Réorganiser le planning, examiner les dépendances</td></tr>
+    <tr><td>AL-06</td><td>Réparation de bétonnière : 420 000 FCFA, au-delà de la borne de Tukey de sa catégorie (35 750 FCFA)</td><td>Demander une justification</td></tr>
+    <tr><td>AL-08</td><td>Une déclaration de production attend depuis plus de 3 jours</td><td>Contrôler sur le terrain, puis valider</td></tr>
+    <tr><td>AL-10</td><td>Fin estimée au 02/01/2027 pour une fin prévue au 23/12/2026</td><td>Renforcer l'équipe ou revoir le planning</td></tr>
+    <tr><td>AL-11</td><td>Aucun rapport journalier pour la veille</td><td>Relancer le chef de chantier</td></tr>
+    <tr><td>AL-12</td><td>Écart d'inventaire de 3 % sur le ciment</td><td>Recompter, puis expliquer l'écart</td></tr>
+    <tr><td>AL-13</td><td>3 dépenses sans justificatif (453 500 FCFA)</td><td>Réclamer les pièces</td></tr>
+  </table>
+  <p>Les seuils (5 %, 10 points, 7 jours, 2 %, 80 %…) sont des valeurs par défaut : l'ingénieur peut les ajuster pour chaque chantier dans l'onglet Paramètres.</p>
+</section>
+
+<section class="chapitre">
+  <h2>8. Réalisation technique</h2>
+  <table>
+    <tr><th style="width:28%">Couche</th><th>Technologie</th></tr>
+    <tr><td>Application web</td><td>Next.js 14 (React 18, TypeScript), pages rendues côté serveur, actions serveur pour les saisies</td></tr>
+    <tr><td>Interface</td><td>Tailwind CSS, composants shadcn, icônes lucide, graphiques recharts, mode clair et sombre</td></tr>
+    <tr><td>Données</td><td>PostgreSQL avec l'ORM Prisma ; base hébergée sur Neon</td></tr>
+    <tr><td>Fichiers</td><td>Justificatifs (photos, PDF) sur Backblaze B2, compartiment privé, liens temporaires de 10 minutes</td></tr>
+    <tr><td>Hébergement</td><td>Vercel, déploiement automatique à chaque envoi sur GitHub</td></tr>
+    <tr><td>Rapport PDF</td><td>@react-pdf/renderer, généré à la demande par le serveur</td></tr>
+    <tr><td>Sécurité</td><td>Mots de passe hachés (scrypt), session signée HMAC-SHA256, contrôle des droits sur chaque page et chaque action</td></tr>
+  </table>
+  <h3>Organisation du code</h3>
+  <table>
+    <tr><th style="width:34%">Fichier</th><th>Rôle</th></tr>
+    <tr><td><code>prisma/schema.prisma</code></td><td>Modèle des données</td></tr>
+    <tr><td><code>lib/stats.ts</code></td><td>Fonctions statistiques pures</td></tr>
+    <tr><td><code>lib/indicateurs.ts</code></td><td>Indicateurs du chantier et alertes</td></tr>
+    <tr><td><code>app/actions.ts</code></td><td>Toutes les saisies, avec les règles de gestion</td></tr>
+    <tr><td><code>lib/rapport-pdf.tsx</code></td><td>Rapport de chantier en PDF</td></tr>
+    <tr><td><code>prisma/seed.ts</code></td><td>Simulation des deux chantiers de démonstration</td></tr>
+  </table>
+</section>
+
+<section class="chapitre">
+  <h2>9. Validation et tests</h2>
+  <h3>Tests des calculs</h3>
+  <p>26 tests automatiques (outil Vitest) vérifient les formules. La série de référence <span class="formule">2, 4, 4, 4, 5, 5, 7, 9</span> donne des valeurs connues : moyenne 5, écart-type 2, médiane 4,5, Q1 4, Q3 5,5, CV 40 %, marge de l'intervalle de confiance 1,788. La régression sur <span class="formule">x = 1…5, y = 2, 4, 5, 4, 5</span> donne a = 0,6, b = 2,2 et r² = 0,6.</p>
+  <p>Un petit chantier fictif est <b>calculé à la main</b>, puis comparé au résultat de l'application : budget consommé 30 %, trésorerie 400 000 FCFA, avancement pondéré 70 %, SPI 1, stock 84 sacs, prix moyen pondéré 1 100 FCFA, autonomie 7 jours, taux de présence 75 %, et exactement quatre alertes attendues.</p>
+  <div class="encadre">Un test a révélé une ambiguïté : l'alerte « pertes en hausse » se déclenchait sans période précédente à laquelle comparer. La règle dit « supérieur au taux des 14 jours précédents » : sans historique, la comparaison n'est pas calculable. Le code a été corrigé pour appliquer la règle à la lettre.</div>
+  <h3>Tests de l'application</h3>
+  <ul>
+    <li><b>Droits</b> : les 4 rôles ont été testés sur toutes les pages des 2 chantiers (76 combinaisons) ; chaque réponse est conforme à la matrice des droits.</li>
+    <li><b>Saisies réelles</b> : validation automatique sous le seuil, mise en attente au-dessus, refus d'une sortie supérieure au stock, refus d'une saisie trop ancienne, refus d'une validation par le chef de chantier, traçage au journal d'audit.</li>
+    <li><b>Production</b> : connexion, pages et rapport PDF vérifiés sur le site en ligne.</li>
+  </ul>
+</section>
+
+<section class="chapitre">
+  <h2>10. Limites et perspectives</h2>
+  <h3>Limites</h3>
+  <ul>
+    <li>Les données de démonstration sont simulées ; les conclusions de l'étude de cas illustrent la méthode, elles ne décrivent pas un chantier réel.</li>
+    <li>Les prévisions supposent un rythme linéaire ; un chantier connaît des phases (gros œuvre, finitions) de rythmes différents.</li>
+    <li>La régression simple n'isole pas les facteurs : météo, approvisionnement et effectif agissent ensemble.</li>
+    <li>L'application suppose une connexion Internet sur le chantier.</li>
+  </ul>
+  <h3>Perspectives</h3>
+  <ul>
+    <li>Régression multiple (heures, effectif, météo) pour mieux expliquer la productivité.</li>
+    <li>Cartes de contrôle de Shewhart sur la consommation des matériaux.</li>
+    <li>Calcul du stock de sécurité à partir de l'écart-type de la consommation, et quantité économique de commande (Wilson).</li>
+    <li>Mode hors ligne pour la saisie sur le terrain, avec synchronisation au retour du réseau.</li>
+    <li>Export Excel des séries pour des analyses complémentaires.</li>
+  </ul>
+</section>
+
+<section class="chapitre">
+  <h2>11. Conclusion</h2>
+  <p>Le projet livre un système d'information complet et en ligne, qui relie les opérations quotidiennes du chantier aux indicateurs statistiques, puis aux décisions. Chaque chiffre affiché indique sa période, son unité et son effectif ; chaque alerte explique sa règle ; chaque donnée garde la trace de son auteur et de sa validation.</p>
+  <p>L'étude de cas montre l'intérêt de la démarche statistique : la médiane corrige la vision donnée par une moyenne tirée par quelques gros achats ; la régression de l'avancement fournit une date de fin crédible (r² = 0,98) ; le Pareto désigne les deux postes qui concentrent 88 % des dépenses ; et le croisement du budget, du stock et de l'avancement évite de conclure trop vite à un dépassement, puisqu'une partie des dépenses dort en stock.</p>
+</section>
+
+<section class="chapitre">
+  <h2>Annexe : écrans de l'application</h2>
+  <figure><img src="img/accueil.png" alt=""><figcaption>Figure 1 — Page d'accueil publique</figcaption></figure>
+  <figure><img src="img/tableau-de-bord.png" alt=""><figcaption>Figure 2 — Tableau de bord de l'ingénieur : indicateurs clés et alertes</figcaption></figure>
+  <figure><img src="img/statistiques.png" alt=""><figcaption>Figure 3 — Statistique descriptive des dépenses journalières</figcaption></figure>
+  <figure><img src="img/finances.png" alt=""><figcaption>Figure 4 — Finances : budget, trésorerie et dépenses</figcaption></figure>
+  <figure><img src="img/tableau-de-bord-sombre.png" alt=""><figcaption>Figure 5 — Le tableau de bord en mode sombre</figcaption></figure>
+  <figure><img src="img/rapport-pdf.png" alt="" style="max-height:150mm"><figcaption>Figure 6 — Première page du rapport de chantier en PDF</figcaption></figure>
+</section>
+
+</body>
+</html>

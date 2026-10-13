@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Manuel d'utilisation - Gestion de chantier</title>
+<link rel="stylesheet" href="style-documents.css">
+</head>
+<body>
+
+<section class="garde">
+  <div>
+    <div class="logo"><img src="../public/logo.png" alt="Logo"></div>
+    <h1>Manuel d'utilisation</h1>
+    <p class="sous" style="text-align:center">Plateforme de gestion de chantier<br>Ingénieur · Client · Chef de chantier · Manœuvre</p>
+    <span class="ue">https://dadji.vercel.app</span>
+  </div>
+  <div class="bas">
+    <table>
+      <tr><td style="width:40%"><b>Version</b></td><td>Octobre 2026</td></tr>
+      <tr><td><b>Accès</b></td><td>Navigateur web, sur ordinateur ou téléphone</td></tr>
+      <tr><td><b>Identifiant</b></td><td>Votre numéro de téléphone</td></tr>
+    </table>
+  </div>
+</section>
+
+<section class="chapitre sommaire">
+  <h2>Sommaire</h2>
+  <ol>
+    <li><span>1. Se connecter</span></li>
+    <li><span>2. Se repérer dans l'application</span></li>
+    <li><span>3. Ingénieur</span></li>
+    <li><span>4. Chef de chantier</span></li>
+    <li><span>5. Client</span></li>
+    <li><span>6. Manœuvre</span></li>
+    <li><span>7. Comprendre les indicateurs et les alertes</span></li>
+    <li><span>8. Messages fréquents et solutions</span></li>
+  </ol>
+</section>
+
+<section class="chapitre">
+  <h2>1. Se connecter</h2>
+  <div class="etape"><span class="num">1</span><div>Ouvrez <b>https://dadji.vercel.app</b>. La page d'accueil présente la plateforme.</div></div>
+  <div class="etape"><span class="num">2</span><div>Cliquez sur <b>Connexion</b>, en haut à gauche.</div></div>
+  <div class="etape"><span class="num">3</span><div>Saisissez votre <b>numéro de téléphone</b> et votre <b>mot de passe</b>. L'icône en forme d'œil affiche ou masque le mot de passe saisi.</div></div>
+  <div class="etape"><span class="num">4</span><div>Cliquez sur <b>Se connecter</b>. Vous arrivez directement sur votre espace.</div></div>
+  <figure><img src="img/connexion.png" alt="" style="max-height:95mm"><figcaption>La page de connexion</figcaption></figure>
+  <div class="encadre info">Votre compte est créé par l'ingénieur, qui vous communique un mot de passe provisoire. Le bouton en haut à droite bascule entre le <b>mode clair</b> et le <b>mode sombre</b>, sur toutes les pages.</div>
+  <h3>Comptes de démonstration</h3>
+  <table>
+    <tr><th>Téléphone</th><th>Rôle</th><th>Mot de passe</th></tr>
+    <tr><td>690000001</td><td>Ingénieur</td><td rowspan="5">Chantier2026</td></tr>
+    <tr><td>690000002</td><td>Client du chantier « Villa R+1 Mendong »</td></tr>
+    <tr><td>690000003</td><td>Client du chantier « Route Nkolbisson »</td></tr>
+    <tr><td>690000010</td><td>Chef de chantier de la villa</td></tr>
+    <tr><td>690000100</td><td>Manœuvre de la villa</td></tr>
+  </table>
+</section>
+
+<section class="chapitre">
+  <h2>2. Se repérer dans l'application</h2>
+  <ul>
+    <li><b>Barre latérale (à gauche)</b> : la liste de vos chantiers ; pour l'ingénieur, la gestion des utilisateurs ; en bas, votre nom et la <b>Déconnexion</b>. La flèche en haut replie la barre.</li>
+    <li><b>Onglets du chantier</b> : Tableau de bord, Statistiques, Travaux, Stock, Finances, Personnel, Rapports, Paramètres. Vous ne voyez que les onglets autorisés pour votre rôle.</li>
+    <li><b>Cadres</b> : chaque page affiche un seul cadre à la fois. Choisissez-le dans la barre de boutons sous le titre ; un petit nombre indique les éléments en attente.</li>
+    <li><b>Messages</b> : après chaque enregistrement, un bandeau vert confirme l'opération, ou un bandeau rouge en donne la raison du refus.</li>
+    <li><b>États</b> : une icône verte signifie validé ou terminé, orange en attente ou en cours, rouge rejeté ou absent.</li>
+  </ul>
+  <figure><img src="img/tableau-de-bord.png" alt=""><figcaption>Le tableau de bord d'un chantier : indicateurs clés, puis un cadre à la fois</figcaption></figure>
+</section>
+
+<section class="chapitre">
+  <h2>3. Ingénieur</h2>
+  <p>L'ingénieur administre la plateforme : il crée les chantiers et les comptes, valide les saisies et pilote avec les statistiques.</p>
+  <h3>3.1 Créer les comptes</h3>
+  <div class="etape"><span class="num">1</span><div>Barre latérale → <b>Utilisateurs</b> → cadre <b>Nouveau compte</b>.</div></div>
+  <div class="etape"><span class="num">2</span><div>Choisissez le rôle (manœuvre, chef de chantier, client), puis saisissez le nom, le téléphone et un mot de passe provisoire d'au moins 8 caractères. Pour un manœuvre, indiquez son métier et son taux journalier : ils servent au calcul du coût de la main-d'œuvre.</div></div>
+  <div class="etape"><span class="num">3</span><div>Un compte ne se supprime pas : on le <b>désactive</b> depuis le cadre <b>Comptes</b>.</div></div>
+  <h3>3.2 Créer un chantier</h3>
+  <div class="etape"><span class="num">1</span><div><b>Mes chantiers</b> → cadre <b>Nouveau chantier</b>.</div></div>
+  <div class="etape"><span class="num">2</span><div>Renseignez le code, le nom, la localisation, le <b>type de chantier</b>, le budget, les dates prévues et les seuils. Choisissez un client existant ou créez-le directement.</div></div>
+  <div class="etape"><span class="num">3</span><div>Vous arrivez sur l'onglet <b>Stock</b> : enregistrez les matériaux à gérer (cadre <b>Nouveau matériau</b>), avec leur unité, leur prix de référence, leur délai de livraison et leur seuil d'alerte en jours.</div></div>
+  <div class="etape"><span class="num">4</span><div>Onglet <b>Travaux</b> → cadre <b>Nouvelle tâche</b> : créez les tâches avec leur lot (proposé selon le type de chantier), leur unité, leur quantité, leur coût prévu et leurs dates.</div></div>
+  <div class="etape"><span class="num">5</span><div>Onglet <b>Personnel</b> → cadre <b>Affecter</b> : affectez le chef de chantier et les manœuvres.</div></div>
+  <div class="etape"><span class="num">6</span><div>Onglet <b>Paramètres</b> → <b>Démarrer le chantier</b>.</div></div>
+  <div class="encadre">Le coût prévu d'une tâche sert de <b>poids</b> dans l'avancement global : une grosse tâche compte davantage qu'une petite.</div>
+  <h3>3.3 Valider les saisies</h3>
+  <table>
+    <tr><th style="width:24%">Quoi</th><th style="width:24%">Où</th><th>Action</th></tr>
+    <tr><td>Dépenses au-dessus du seuil</td><td>Finances → Dépenses</td><td><b>Valider</b>, ou <b>Rejeter</b> avec un motif ; puis <b>Marquer payée</b> le jour du paiement</td></tr>
+    <tr><td>Avances du client</td><td>Finances → Avances</td><td><b>Confirmer</b> à la réception des fonds, ou <b>Rejeter</b></td></tr>
+    <tr><td>Production déclarée</td><td>Travaux → En attente</td><td><b>Valider</b> une ligne, ou <b>Tout valider</b> après contrôle sur le terrain</td></tr>
+    <tr><td>Fin d'une tâche</td><td>Travaux → Tâches</td><td><b>Clôturer</b> ; si la tâche finit en retard, choisissez la cause</td></tr>
+    <tr><td>Inventaires</td><td>Stock → Inventaires</td><td><b>Valider</b> : le stock théorique est aligné sur le comptage</td></tr>
+    <tr><td>Rapports journaliers</td><td>Rapports → Rapports</td><td><b>Valider</b> : le client peut alors les lire</td></tr>
+    <tr><td>Signalements</td><td>Rapports → Signalements</td><td>Écrire une réponse, puis <b>Clore</b></td></tr>
+  </table>
+  <h3>3.4 Piloter</h3>
+  <ul>
+    <li><b>Tableau de bord</b> : budget consommé, trésorerie, avancement validé, présence du jour, puis les cadres Alertes, Avancement (courbe réel / prévu, SPI, CPI, fin estimée), Dépenses, Répartition et Stock.</li>
+    <li><b>Statistiques</b> : statistique descriptive, histogramme, boîte à moustaches, régression, prévision, Pareto, consommation, retards, présence.</li>
+    <li><b>Rapport PDF</b> : le bouton orange en haut à droite du chantier télécharge le rapport complet.</li>
+    <li><b>Mes chantiers</b> → cadre <b>Comparaison</b> : avancement, budget, SPI, CPI et alertes de tous vos chantiers côte à côte.</li>
+  </ul>
+  <h3>3.5 Paramètres du chantier</h3>
+  <ul>
+    <li><b>Cycle de vie</b> : suspendre (motif obligatoire), reprendre, clôturer. La clôture est refusée tant qu'une dépense, une production ou une avance attend une validation. Un chantier clôturé passe en lecture seule.</li>
+    <li><b>Seuils</b> : le seuil de validation des dépenses et les seuils de chaque alerte.</li>
+    <li><b>Journal d'audit</b> : qui a fait quoi et quand.</li>
+    <li><b>Avenant</b> (onglet Finances) : pour réviser le budget, avec un motif. Le budget initial reste visible.</li>
+  </ul>
+</section>
+
+<section class="chapitre">
+  <h2>4. Chef de chantier</h2>
+  <p>Le chef de chantier saisit les opérations de la journée. Une saisie du jour reste modifiable jusqu'au lendemain ; au-delà, seul l'ingénieur peut corriger.</p>
+  <h3>4.1 Le stock (onglet Stock)</h3>
+  <table>
+    <tr><th style="width:24%">Opération</th><th>Comment faire</th></tr>
+    <tr><td>Réception d'une livraison</td><td>Cadre <b>Mouvement</b> → type <b>Entrée</b>, quantité, <b>prix unitaire</b>, numéro du bon de livraison. La dépense correspondante est créée automatiquement.</td></tr>
+    <tr><td>Consommation</td><td>Type <b>Sortie</b>, quantité, et la <b>tâche</b> qui consomme le matériau.</td></tr>
+    <tr><td>Perte ou casse</td><td>Type <b>Perte</b>, avec le motif (pluie, casse, vol…).</td></tr>
+    <tr><td>Renvoi au fournisseur</td><td>Type <b>Retour fournisseur</b>, avec le motif.</td></tr>
+    <tr><td>Erreur de saisie</td><td>Cadre <b>Historique</b> → <b>Corriger</b>, le jour même. Rien n'est effacé : une opération opposée est créée.</td></tr>
+    <tr><td>Inventaire de la semaine</td><td>Cadre <b>Inventaires</b> : comptez le stock et saisissez le <b>stock physique</b>. L'écart est calculé automatiquement.</td></tr>
+  </table>
+  <figure><img src="img/stock.png" alt=""><figcaption>L'onglet Stock : matériaux, stock, autonomie en jours</figcaption></figure>
+  <h3>4.2 Les dépenses (onglet Dépenses)</h3>
+  <p>Cadre <b>Nouvelle dépense</b> : catégorie, libellé, montant en FCFA, date, numéro de facture ou de reçu et, si possible, la <b>photo ou le PDF du justificatif</b> (4 Mo au plus). Sous le seuil du chantier, la dépense est validée tout de suite ; au-dessus, elle attend l'ingénieur. Une dépense sans justificatif peut être complétée ensuite avec le bouton <b>Justifier</b>.</p>
+  <h3>4.3 La production (onglet Travaux)</h3>
+  <p>Cadre <b>Production du jour</b> : pour chaque tâche travaillée, la quantité réalisée, les heures travaillées par l'équipe sur cette tâche et l'effectif. L'ingénieur valide ensuite. Quand un manœuvre signale la fin d'une tâche, cliquez sur <b>Confirmer la fin</b> dans le cadre <b>Tâches</b>.</p>
+  <h3>4.4 Les présences et le jour de repos (onglet Personnel)</h3>
+  <div class="etape"><span class="num">1</span><div>Cadre <b>Présences du jour</b> : pour chaque manœuvre, choisissez Présent, En retard ou Absent, puis les heures réalisées. Cliquez sur <b>Enregistrer les présences</b>.</div></div>
+  <div class="etape"><span class="num">2</span><div>Un pointage fait par un manœuvre apparaît avec la mention « pointage à confirmer » : votre enregistrement le confirme.</div></div>
+  <div class="etape"><span class="num">3</span><div>Cadre <b>Jours de repos</b> : déclarez à l'avance <b>un jour de repos par semaine</b>. Ce jour-là, personne n'est compté absent et aucun rapport n'est attendu.</div></div>
+  <figure><img src="img/personnel.png" alt=""><figcaption>L'onglet Personnel : saisie des présences du jour</figcaption></figure>
+  <h3>4.5 Le rapport journalier (onglet Rapports)</h3>
+  <p>Cadre <b>Nouveau rapport</b>, chaque jour : météo, travaux réalisés, incidents, observations. Un rapport manquant le lendemain à midi déclenche une alerte chez l'ingénieur.</p>
+</section>
+
+<section class="chapitre">
+  <h2>5. Client</h2>
+  <ul>
+    <li><b>Tableau de bord</b> : budget consommé, trésorerie, avancement validé, alertes et courbes.</li>
+    <li><b>Statistiques</b> : toutes les analyses de l'équipe, sans données individuelles sur les ouvriers.</li>
+    <li><b>Travaux</b> et <b>Matériaux</b> : l'avancement de chaque tâche et l'état du stock, en lecture.</li>
+    <li><b>Finances</b> : les dépenses validées et leurs justificatifs (bouton « Voir le fichier »).</li>
+    <li><b>Déclarer un versement</b> : Finances → cadre <b>Avances</b> → montant, date, mode (espèces, virement, mobile money, chèque) et référence. L'avance apparaît « en attente » jusqu'à ce que l'ingénieur confirme la réception des fonds.</li>
+    <li><b>Signaler une anomalie ou demander une justification</b> : Rapports → cadre <b>Signaler</b>. La réponse de l'ingénieur s'affiche dans le cadre <b>Signalements</b>.</li>
+    <li><b>Rapport PDF</b> : bouton orange en haut à droite du chantier.</li>
+  </ul>
+  <figure><img src="img/client.png" alt=""><figcaption>L'espace du client</figcaption></figure>
+</section>
+
+<section class="chapitre">
+  <h2>6. Manœuvre</h2>
+  <p>Le manœuvre dispose d'un espace simplifié, pensé pour le téléphone.</p>
+  <div class="etape"><span class="num">1</span><div>Cadre <b>Aujourd'hui</b> → <b>Je suis arrivé</b> pour pointer. Le chef de chantier confirme ensuite.</div></div>
+  <div class="etape"><span class="num">2</span><div>Cadre <b>Tâches en cours</b> → <b>Signaler la fin</b> quand une tâche est terminée.</div></div>
+  <div class="etape"><span class="num">3</span><div>Cadre <b>Signaler</b> : un manque de matériau, une perte ou un incident, avec une description. La réponse s'affiche dans la liste de vos signalements.</div></div>
+  <div class="etape"><span class="num">4</span><div>Cadre <b>Mes présences</b> : vos jours de présence et vos heures.</div></div>
+  <figure><img src="img/manoeuvre.png" alt="" style="max-height:110mm"><figcaption>L'espace du manœuvre</figcaption></figure>
+</section>
+
+<section class="chapitre">
+  <h2>7. Comprendre les indicateurs et les alertes</h2>
+  <table>
+    <tr><th style="width:28%">Indicateur</th><th>Signification</th></tr>
+    <tr><td>Budget consommé</td><td>Dépenses validées ÷ budget. Ce n'est pas l'argent disponible.</td></tr>
+    <tr><td>Trésorerie disponible</td><td>Avances validées − dépenses payées : l'argent réellement en caisse.</td></tr>
+    <tr><td>Dépense engagée</td><td>Validée mais pas encore payée.</td></tr>
+    <tr><td>Avancement validé</td><td>Part des travaux réalisés et contrôlés, pondérée par le coût des tâches.</td></tr>
+    <tr><td>SPI</td><td>Sous 1 : le chantier est en retard sur son planning.</td></tr>
+    <tr><td>CPI</td><td>Sous 1 : les travaux coûtent plus que prévu, ou une partie de l'argent dort en stock.</td></tr>
+    <tr><td>Fin estimée</td><td>Date à laquelle on atteindrait 100 % si le rythme observé se maintient ; affichée seulement si la tendance est fiable.</td></tr>
+    <tr><td>Autonomie</td><td>Nombre de jours avant d'épuiser le stock au rythme des 10 derniers jours.</td></tr>
+    <tr><td>Coefficient de variation</td><td>Régularité d'une série : sous 15 % homogène, au-delà de 30 % irrégulière.</td></tr>
+  </table>
+  <div class="encadre">Une alerte est un <b>signal à examiner</b>, pas une accusation. Chaque alerte indique la règle déclenchée, la période étudiée, la décision suggérée et la personne qui doit la traiter. L'ingénieur peut ajuster les seuils dans Paramètres → Seuils.</div>
+</section>
+
+<section class="chapitre">
+  <h2>8. Messages fréquents et solutions</h2>
+  <table>
+    <tr><th style="width:38%">Message</th><th>Signification et solution</th></tr>
+    <tr><td>Téléphone ou mot de passe incorrect</td><td>Vérifiez la saisie avec l'œil ; sinon, demandez à l'ingénieur de vérifier que votre compte est actif.</td></tr>
+    <tr><td>Stock insuffisant : faites un inventaire</td><td>La sortie dépasse le stock enregistré. Vérifiez la quantité, ou faites l'inventaire si le stock réel diffère.</td></tr>
+    <tr><td>Saisie close : seul l'ingénieur peut saisir au-delà de la veille</td><td>Les saisies anciennes sont réservées à l'ingénieur : demandez-lui de corriger.</td></tr>
+    <tr><td>Une sortie doit indiquer la tâche qui consomme</td><td>Choisissez la tâche dans la liste avant d'enregistrer.</td></tr>
+    <tr><td>Un seul jour de repos par semaine</td><td>Un jour de repos est déjà déclaré cette semaine ; annulez-le d'abord si vous voulez le déplacer.</td></tr>
+    <tr><td>Chantier suspendu ou clôturé</td><td>Plus aucune saisie n'est possible ; seul l'ingénieur peut reprendre un chantier suspendu.</td></tr>
+    <tr><td>Clôture refusée</td><td>Des éléments attendent une validation : l'application en donne la liste.</td></tr>
+    <tr><td>Page introuvable</td><td>La page n'existe pas, ou le chantier ne fait pas partie de votre périmètre.</td></tr>
+  </table>
+</section>
+
+</body>
+</html>
