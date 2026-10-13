@@ -7,6 +7,11 @@ const nextConfig = {
     // Le moteur PDF charge ses polices et son module de mise en page à
     // l'exécution : il ne doit pas passer par le regroupement de Next.
     serverComponentsExternalPackages: ["@react-pdf/renderer"],
+    // Les polices standard de pdfkit sont chargées par un require dynamique :
+    // le traçage de Vercel ne les voit pas, il faut les embarquer à la main.
+    outputFileTracingIncludes: {
+      "/chantiers/[id]/rapport-pdf": ["./node_modules/pdfkit/js/standard-fonts/**/*"],
+    },
   },
 };
 
